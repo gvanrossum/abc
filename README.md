@@ -44,4 +44,4 @@ Steven Pemberton, Guido van Rossum.
   000027-2.
 - Steven Pemberton, An Alternative Simple Language and Environment for PCs,
   IEEE Software, Vol. 4, No. 1, January 1987, pp. 56-64.
-  http://www,cwi.nl/~steven/abc.html
+  http://www.cwi.nl/~steven/abc.html
