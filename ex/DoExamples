@@ -1,0 +1,36 @@
+# Add new examples by creating a directory <name>-ex, and input commands in <name>-ex.in, and the output as it should be in <name>-ex.out. 
+WS='*.ex'
+OK=yes
+
+case $1 in
+local)	abc=../abc;;
+*)	abc=abc;;
+esac
+
+for ws in $WS
+do
+	echo " "
+	echo "Testing $ws example ..."
+	$abc -w ./$ws <$ws.in > out
+	if cmp -s out $ws.out
+	then
+		echo "... $ws example OK ..."
+	else
+		OK=no
+		echo "... $ws example NOT OK ..."
+		echo "Differences: <is >should-be"
+		diff out $ws.out
+	fi
+done
+
+echo " "
+case $OK in
+no) echo Not all examples ran OK; exit 1;;
+yes) 
+      echo All examples ran OK.
+      case $1 in
+      local)	echo "Now you can try the ABC editor with 'make try_editor'.";;
+      *)	echo "Now you can try the ABC editor with TryEditor.";;
+      esac
+esac
+exit 0

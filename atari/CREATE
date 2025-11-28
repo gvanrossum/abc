@@ -1,0 +1,17 @@
+# Creation guide of the ABC binaries for the Atari via the cross compiler.
+#
+# First, compile mkmach.c with the cross compiler, run it on the Atari and
+# store the output in the file mach.h
+#
+# Call mkmf.cross for the atari in the parent directory to create
+# the Makefiles for abc and abckeys in the directories ./objects and
+# ./objects/keys.
+# Move to directory ./objects and call '/usr/local/gnu/make all' to create
+# the binaries abc.tos and abckeys.tos.
+
+cd ..
+scripts/mkmf.cross atari
+cd atari/objects
+/usr/local/gnu/make all
+/usr/local/gnu/make messages
+/usr/local/gnu/make clean

@@ -1,0 +1,1 @@
+all: b1file.o b1grab.o b1memo.o b1mess.o b1outp.o getopt.o

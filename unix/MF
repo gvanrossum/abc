@@ -1,0 +1,1 @@
+all: dir.o edit.o file.o keys.o main.o os.o sig.o trm.o usage.o

@@ -1,0 +1,46 @@
+CFLAGS=-AL -I.. -DNDEBUG -DKEYS
+
+.c.obj:
+	cl -c $(CFLAGS) $*.c
+
+OBJS=	keydef.obj keyhlp.obj \
+	b1file.obj b1memo.obj b1mess.obj \
+	e1getc.obj \
+	file.obj keys.obj trm.obj os.obj
+
+all: abckeys.exe
+
+abckeys.exe: $(OBJS) modules
+	link /noi /stack:8096 /segments:1024 @modules
+	lzexe abckeys.exe
+
+keydef.obj: keydef.c keydef.h
+
+keyhlp.obj: keyhlp.c
+
+b1file.obj: ..\b1file.c ..\b.h ..\bfil.h ..\bmem.h ..\port.h
+	cl -c $(CFLAGS) ..\b1file.c b1file.obj
+
+b1memo.obj: ..\b1memo.c ..\b.h ..\bmem.h
+	cl -c $(CFLAGS) ..\b1memo.c b1memo.obj
+
+b1mess.obj: ..\b1mess.c ..\b.h ..\bmem.h ..\bobj.h ..\port.h
+	cl -c $(CFLAGS) ..\b1mess.c b1mess.obj
+
+e1getc.obj: ..\e1getc.c ..\b.h ..\bmem.h ..\bobj.h ..\oper.h ..\getc.h \
+	..\port.h
+	cl -c $(CFLAGS) ..\e1getc.c e1getc.obj
+
+file.obj: ..\file.c ..\b.h ..\main.h ..\port.h
+	cl -c $(CFLAGS) ..\file.c file.obj
+
+keys.obj: ..\keys.c ..\b.h ..\getc.h ..\oper.h
+	cl -c $(CFLAGS) ..\keys.c keys.obj
+
+trm.obj: ..\trm.c ..\b.h ..\trm.h ..\bgfx.h
+	cl -c $(CFLAGS) ..\trm.c trm.obj
+
+os.obj: ..\os.c ..\b.h ..\main.h ..\port.h
+	cl -c $(CFLAGS) ..\os.c os.obj
+
+

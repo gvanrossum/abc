@@ -1,0 +1,11 @@
+-- Jan-Hein B\"uhrman 19911018
+
+When you enter `abc -e' and enters your favorite editor (in my case `vi'),
+the terminal is not left in a completely sane state (I suspect that at least
+the LF -> CR/LF translation is not reset).
+
+The on-line Unix manual don't know how to deal with `.IR'-macros.
+
+Mac: initial editor error message is misplaced on the screen
+
+All: THe BTrees modules doesn't work on 64 bit systems

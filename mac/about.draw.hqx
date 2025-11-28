@@ -1,0 +1,59 @@
+The ultimate source of the picture shown in the "About MacABC ..." dialog
+is the MacDraw file about.draw, saved here as a binhexed file about.draw.hqx.
+
+To construct a new resource description file about.r from it:
+
+- start MacDraw with about.draw as document;
+- change the picture;
+- choose "Select All" (Command-A);
+- choose "Copy" (Command-C) to copy the complete picture to the Clipboard;
+- QUIT MacDraw;
+
+- Enter RezEdit;
+- goto the source folder of MacABC (currently Tau:MPW:abcsrc);
+- Choose NEW to create a new file, e.g. about.pict.new;
+- Choose PASTE (Command-V);
+- QUIT RezEdit (confirming the changes);
+
+- Enter MPW and goto the source directory;
+- type "DeRez about.pict.new {Rincludes}Types.r >about.r.new";
+- manually copy the first three lines of the old about.r to the new one;
+- move about.r.new to about.r;
+
+- make will do the rest, producing about.out from about.r.
+---
+(This file must be converted with BinHex 4.0)
+:#Q&LEh9d,Q4bBAF!4&*A4de%8PF!!!!!"4N!!!%HUUY%8PG(683!"J!#!!!!5!"
+)!!!!!!-0!KVri[rN!bX#0J-("AX$hJ!#!!!!5!")!!!!!!-0!KS!!3!!!'3!!!!
+"!!%"!3!!!!%R$`!"!!%!!!!!!!!!!!!!!!!!!J!C!C!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")!!!!5!!!!!!"!!-$!J!$!3!)!`%
+"!!!"!3!"!J,d!r!#p!2`![3"q!!!!!!!!3%""J!"!!!!!!!!!!!!!!!!!!!!!!!
+!#J!+!!!%03!!!!!!!!"-!2[r[!'[rRB!PJ!(!#%!$J!!!"B!b!!$!"8!"J!-!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!%!!%!!`-#!!!!!!!!!!"-!2[r[!'[rRB"!!%!!`-
+"!!!'IDJ!"3-"!3!!"J!*!,d!'3$e6@&M38*$!3!"!!-$!3!!"Rf)!3J"!3)!!$X
+!,J!U!$S"NN0[F(PbD@GSG##T)$%j16%X)&0dD@0SG'PZCb"0BA4SC@eKG'PcBfJ
+J3f9ZG(*eE5`J3@ecG'9bC'&Y!3!"!!-$!3!!"Rf%!!J"!3%!!$d!N3!N!*d"4P4
+[)'YPCA!JD@iJG'peBfJJGfPdD#""3N-JC'9fC@a[F'ePER4c)(P[G5"MB@iJFQ9
+RDA0dCA)JGfPdD$S"!!%!!`-"!!!'IA`!#!%"!3!!6`#M!&S!Z`&99'KP)%&#3b"
+1CAGcE'9dG'9b,#"$9dNJ,5""35`08#j2,L"#EhJJ0$!h15`J-6!`15""3L""EA0
+dCA*NB@dX)&4SC5"1CA4SCA*XB@jNF`%!!3!$!`%!!!CpG!!)!3%"!!#C!-F!@J$
+V!A*-C@mJ4f9eFR4c,#"-B@eLCA*d)%ePCA*dC@jc)'&ZC#"6G'9fC@iJ8'9YBQ9
+bG'pZ,!e8D'8J38*$)&"bEfGbB@eYCA)RFb")B@jNBQp[Db`J8(*PER4TBf8J5'&
+XE#`J$89ZCfaPGfp[C#"$E'PQCR-X)%jPGb"+CA*cCANX)$%j16!X)%P63NiJ-#d
+a-bd`-$!`-MFY-Li"!!%!!`-"!!!'I@`!#!%"!3!!!J"#!*N!6J#TBRN"!!%!!`-
+"!!!'I@3!#!%"!3!!@3"#!,3!LJ%,4@4NH5"#Ef9fC3e'FQ&ZDb"fB@iJ4'PUD`e
+8D@e[)%YbD@TZC@i06'&YBQ9bG#"0C@9bG'9ZF`e6G'9fC@iJ8'9YBQ9bG'pZ$8G
+eD@4[)(CKEL"5Eh0cG@d"!!%!!`-"!!!'I9`!#!%"!3!!#3$(!#3!d`"58f9P)'&
+XFfmk!3!"!!-$!3!!"Re8!3J#!3%!!$-!(!!r!#N"IP4SC5""3N-JD@jdCA*`FQ9
+dCA)J*L"PERCTFQpZE@9ZG#"QEh)JG'KP)%eKBfPZG'pcD!!!!3!$!`)!DBN!!!%
+!!!!"!!!!!!!!!!!H,`0)D!!)U+e+(fF58J4R%$em!!S!&NS'C`45EJ!@6R8+B@*
+[GA3ZC(*KGf%#!!!!4&*A4de%8PF!!!!!!!!!!!!!4&*A4de%8PF!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!#N#NmF!!!&$J!!!4kU&9&2-#`!"$)!N!"8"%!!$1*!NN!
+r33!%"%%!$$k"5RJ#MQXD5RJ,V'F8-L`!"P9"2d%!"J4"!!`r33!#B")b,!!#9%%
+r33!#"N%!$$p"!!B[$kLM)&-k+!!5%#J!%@F8$!!!rQ8'B3$q`Q!),c`!!J!#U*X
+[$``'!!*R"+LKB!+SY`!!!3!!!!%!!!!!!!!!!"i!!!!!!!!!!!!F!"lrrc#E:

@@ -1,0 +1,200 @@
+#!/bin/sh
+
+# make Makefile for atari or unix or ... (name your favourite cross compiler:-)
+
+SYSTEM=$1
+
+if test ! -d $SYSTEM/objects
+then mkdir $SYSTEM/objects
+fi
+MF=$SYSTEM/objects/Makefile
+
+# group directory for Makefile
+PARENT=../..
+
+CPATH="$(PARENT):$(PARENT)/b:$(PARENT)/bed:$(PARENT)/bint1:$(PARENT)/bint2:$(PARENT)/bint3:$(PARENT)/btr:$(PARENT)/stc:$(PARENT)/bio:$(PARENT)/$SYSTEM"
+
+HPATH="$(PARENT)"
+
+IINCL="-I$(PARENT)/bhdrs -I$(PARENT)/ehdrs -I$(PARENT)/btr -I$(PARENT)/ihdrs -I$(PARENT)/$SYSTEM"
+
+CDIRS="b bed bint1 bint2 bint3 btr stc bio $SYSTEM"
+INCL="-Ibhdrs -Iehdrs -Ibtr -Iihdrs -I$SYSTEM"
+
+echo "Creating Makefile for $SYSTEM ... "
+
+echo "# ABC Makefile for $SYSTEM" >$MF
+echo "#" >>$MF
+echo "MAKE=/usr/local/gnu/make" >>$MF
+echo >>$MF
+
+case $SYSTEM in
+atari)
+	echo "ABC=abc.tos" >>$MF
+	echo >>$MF
+	CC=/ufs/frank/cross-gcc-atari/bin/cgcc
+	echo "CC=$CC" >>$MF
+	echo >>$MF
+	echo "LIBS=-lpml -lgem" >>$MF
+	echo >>$MF
+	;;
+*)
+	echo "ABC=abc" >>$MF
+	echo >>$MF
+	echo "LIBS=-lm" >>$MF
+	echo >>$MF
+	;;
+esac
+
+echo "PARENT=$PARENT" >>$MF
+echo >>$MF
+
+echo "CPATH=$CPATH" >>$MF
+echo "vpath %.c $(CPATH)" >>$MF
+echo >>$MF
+
+echo "HPATH=$HPATH" >>$MF
+echo "vpath %.h $(HPATH)" >>$MF
+echo >>$MF
+
+echo "INCL=$IINCL" >>$MF
+echo >>$MF
+
+echo 'CFLAGS= -O -DNDEBUG $(INCL)' >>$MF
+echo >>$MF
+
+echo "OBJECTS= \\" >>$MF
+for d in $CDIRS
+do
+	cd $d
+	echo "	" *.c \\ | sed 's/\.c/\.o/g' >>../$MF
+	cd ..
+done
+echo "#END OBJECTS" >>$MF
+echo >>$MF
+
+echo "BSRCS=$(PARENT)/b/*.c" >>$MF
+echo "ESRCS=$(PARENT)/bed/*.c" >>$MF
+echo "ISRCS=$(PARENT)/bint1/*.c $(PARENT)/bint2/*.c $(PARENT)/bint3/*.c $(PARENT)/btr/*.c $(PARENT)/stc/*.c $(PARENT)/bio/*.c" >>$MF
+echo "SSRCS=$(PARENT)/$SYSTEM/*.c" >>$MF
+echo >>$MF
+
+echo 'all: abc abckeys' >>$MF
+echo >>$MF
+
+echo 'abc: $(OBJECTS)' >>$MF
+echo '	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJECTS) $(LIBS) -o $(ABC)' >>$MF
+echo >>$MF
+
+echo 'abckeys: ALWAYS' >>$MF
+echo '	cd keys; \' >>$MF
+echo '	$(MAKE) -f Makefile all' >>$MF
+echo >>$MF
+
+echo 'messages: abc.msg' >>$MF
+echo >>$MF
+echo 'abc.msg: $(BSRCS) $(ESRCS) $(ISRCS) $(SSRCS) \' >>$MF
+echo '		$(PARENT)/ihdrs/i0err.h \' >>$MF
+echo '		$(PARENT)/ehdrs/erro.h \' >>$MF
+echo '		$(PARENT)/bio/i4bio.h' >>$MF
+echo '	$(PARENT)/scripts/Collect $(BSRCS) $(ESRCS) $(ISRCS) $(SSRCS) \' >>$MF
+echo '		$(PARENT)/ihdrs/i0err.h \' >>$MF
+echo '		$(PARENT)/ehdrs/erro.h \' >>$MF
+echo '		$(PARENT)/bio/i4bio.h >abc.msg' >>$MF
+echo >>$MF
+
+echo 'clean:' >>$MF
+echo '	rm -f *.o keys/*.o core' >>$MF
+echo >>$MF
+
+echo 'ALWAYS: # Must not exist, but must be mentioned in the makefile' >>$MF
+echo >>$MF
+
+echo "# Dependencies" >>$MF
+echo >>$MF
+for d in $CDIRS
+do
+	case $SYSTEM in
+	atari)
+		$CC -MM $INCL $d/*.c >>$MF
+		;;
+	*)
+		$CC -M $INCL $d/*.c | grep -v ': /' >>$MF
+		;;
+	esac
+done
+
+if test ! -d $SYSTEM/objects/keys
+then mkdir $SYSTEM/objects/keys
+fi
+MF=$SYSTEM/objects/keys/Makefile
+PARENT="$PARENT/.."
+CPATH="$CPATH:$(PARENT)/keys"
+IINCL="$IINCL -I$(PARENT)/keys"
+INCL="$INCL -Ikeys"
+
+OBJS="keydef.o keyhlp.o e1getc.o b1file.o b1memo.o b1mess.o file.o keys.o trm.o os.o"
+SRCS="keys/keydef.c keys/keyhlp.c bed/e1getc.c b/b1file.c b/b1memo.c b/b1mess.c $SYSTEM/file.c $SYSTEM/keys.c $SYSTEM/trm.c $SYSTEM/os.c"
+
+echo "# ABCKEYS Makefile for $SYSTEM" >$MF
+echo "#" >>$MF
+echo "MAKE=/usr/local/gnu/make" >>$MF
+echo >>$MF
+
+case $SYSTEM in
+atari)
+	echo "ABC=abckeys.tos" >>$MF
+	echo >>$MF
+	CC=/ufs/frank/cross-gcc-atari/bin/cgcc
+	echo "CC=$CC" >>$MF
+	echo >>$MF
+	echo "LIBS=-lpml -lgem" >>$MF
+	echo >>$MF
+	;;
+*)
+	echo "ABC=abckeys" >>$MF
+	echo >>$MF
+	echo "LIBS=-lm" >>$MF
+	echo >>$MF
+	;;
+esac
+
+echo "PARENT=$PARENT" >>$MF
+echo >>$MF
+
+echo "CPATH=$CPATH" >>$MF
+echo "vpath %.c $(CPATH)" >>$MF
+echo >>$MF
+
+echo "HPATH=$HPATH" >>$MF
+echo "vpath %.h $(HPATH)" >>$MF
+echo >>$MF
+
+echo "INCL=$IINCL" >>$MF
+echo >>$MF
+
+echo 'CFLAGS= -O -DNDEBUG -DKEYS $(INCL)' >>$MF
+echo >>$MF
+
+echo "OBJECTS=$OBJS" >>$MF
+echo >>$MF
+
+echo 'all: $(OBJECTS)' >>$MF
+echo '	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJECTS) $(LIBS) -o $(ABC)' >>$MF
+echo >>$MF
+
+echo "# Dependencies" >>$MF
+echo >>$MF
+
+case $SYSTEM in
+atari)
+	$CC -MM $INCL $SRCS >>$MF
+	;;
+*)
+	$CC -M $INCL $SRCS | grep -v ': /' >>$MF
+	;;
+esac
+
+echo >>$MF
+
+echo "done"

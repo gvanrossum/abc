@@ -1,0 +1,2 @@
+HOW TO REPORT alphabetic char:
+   REPORT char in {'a'..'z'} OR char in {'A'..'Z'}

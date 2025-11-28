@@ -1,0 +1,15 @@
+HOW TO RETURN words line:
+   PUT {} IN list
+   TO.WORD.START
+   WHILE line > "":
+      PUT line|1, line@2 IN word, line
+      TO.WORD.END
+      INSERT word IN list
+      TO.WORD.START
+   RETURN list
+TO.WORD.START:
+   WHILE line > "" AND NOT alphabetic line|1:
+      PUT line@2 IN line
+TO.WORD.END:
+   WHILE alphabetic line|1:
+      PUT word^line|1, line@2 IN word, line

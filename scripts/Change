@@ -1,0 +1,50 @@
+: 'Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1985. '
+
+: 'Change error messages in limited number of files'
+
+: 'This should be called locally in the directory of the concerning files!'
+
+case $1 in
+''|-*)	echo "Usage: $0 [start [step]] file ..." 1>&2; exit 1;;
+[0-9]*) start=$1; shift;
+	case $1 in
+	[0-9]*) step=$1; shift;;
+	*) step=100;;
+	esac;;
+*)	start=100; step=100;;
+esac
+
+for file
+do
+	if test -f $file.orig
+	then
+		echo $file.orig already exists, $file skipped
+	else
+		mv $file $file.orig || exit
+		echo $file $start
+		sed 's/MESS([0-9]*/MESS($/' $file.orig |
+		awk "BEGIN {messnum=$start}"'
+			/MESS\(/ {n=split($0, field, "$");
+			 for (i=1; i<= n; i++) {
+			  if (i==2) {printf "%d", messnum; ++messnum}
+			  if (i>2) printf "$"
+			  printf "%s", field[i]
+			 }
+			 printf "\n"
+			}
+			!/MESS\(/ {print}' >$file
+		if test -s $file
+		then
+			if cmp -s $file.orig $file
+			then
+				mv $file.orig $file
+				echo $file unchanged
+			else
+				start=`expr $start + $step`
+			fi
+		else
+			mv $file.orig $file
+			echo $file clobbered, old version put back
+		fi
+	fi
+done

@@ -1,0 +1,1 @@
+all: i2tca.o i2tce.o i2tcp.o i2tcu.o

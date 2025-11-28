@@ -1,0 +1,998 @@
+: 'Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1991.'
+
+: 'Define RM to something other than yes and temporary files will remain'
+RM=yes
+
+cat <<EOF
+Configuration questions for the ABC system.
+
+You may run this script as often as you want before running 'make all'.
+
+If in the following we fail to find a function that you know is available,
+it may be that you have to give an extra library flag to the compiler.
+If this is the case, look the flag up, and rerun Setup.
+
+In any question, a value in square brackets [so] gives the default.
+EOF
+
+: 'Determine if echo -n works'
+case  `echo -n foo` in
+-n*) n="" c='\c';;
+*) n=-n c="";;
+esac
+
+: 'Get answers from previous run'
+if test -r answers
+then
+	. ./answers
+else
+	rootdef="/tmp/abc"
+	abcdef="/usr/local"
+	libdef="/usr/local/lib/abc"
+	mandef="/usr/man/manl"
+	ccdef="cc"
+	cflagsdef="none"
+	ldflagsdef="none"
+	fflagdef="-f"
+fi
+
+: 'Are we preparing for cross compilation?'
+if ./readyn "Are you going to cross-compile ABC to a remote machine?"
+then
+	remote="remote"
+	. ./readdir "" "$rootdef" local "ABC for you to copy to the target machine"
+	rootdir="$dir"
+else
+	remote=""
+	rootdir=""
+fi
+
+: 'Shall we make ABC public?'
+public="no"
+if ./readyn "Do you want to make ABC publically available?"
+then
+	public="yes"
+	. ./readdir "$rootdir" "$abcdef" "$remote" "the abc binaries"
+	abcdir="$dir"
+	. ./readdir "$rootdir" "$libdef" "$remote" "the abc datafiles"
+	libdir="$dir"
+	. ./readdir "$rootdir" "$mandef" "$remote" "the 'abc.1' manual page"
+	mandir="$dir"
+else
+	abcdir="$abcdef"
+	libdir="$libdef"
+	mandir="$mandef"
+fi
+
+: 'What C compiler + flags?'
+echo " "
+echo $n "C compiler to use [default $ccdef] $c"
+read ans
+case $ans in
+'')	cc="$ccdef";;
+*)	cc="$ans";;
+esac
+
+echo $n "Extra CFLAGS to use [default $cflagsdef] $c"
+read ans
+case $ans in
+'')	case $cflagsdef in
+	none) cflags=;;
+	*)    cflags="$cflagsdef"
+	esac
+	;;
+*)	cflags="$ans";;
+esac
+
+echo $n "Extra library flags to use [default $ldflagsdef] $c"
+read ans
+case $ans in
+'')	case $ldflagsdef in
+	none) ldflags=;;
+	*)    ldflags="$ldflagsdef"
+	esac
+	;;
+*)	ldflags="$ans";;
+esac
+
+echo " "
+echo $n "Trying: $cc $cflags main.c $ldflags ... $c"
+
+echo "main() { int i; i=0; }" >main.c || { echo 'Read only directory?'; exit 1;}
+if $cc $cflags main.c $ldflags >main.out 2>&1
+then
+	echo "seems ok."
+else
+	echo failed! Giving up.
+	echo Error message was:
+	cat main.out
+	exit 1
+fi
+
+: 'Floating point arithmetic ok?'
+echo " "
+case $remote in
+"remote")
+	if ./readyn "Does $cc need a special flag for floating point?"
+	then
+		echo $n "What flag is needed [default $fflagdef] $c"
+		read fflag
+		case $fflag in
+		'') fflag="$fflagdef";;
+		esac
+	fi
+	;;
+*)
+	echo $n "Checking floating point ... $c"
+cat >float.c <<EOF
+#include <stdio.h>
+	double dadd(a, b) double a, b; {
+		return a+b;
+	}
+	main() {
+		double a, b, c;
+		double dadd();
+		a = 3.14;
+		b = 2.7 * a;
+		c = dadd(a, b);
+		exit(0);
+	}
+EOF
+	$cc $cflags -O float.c $ldflags -o float >/dev/null 2>&1
+	if sh 2>/dev/null <<EOF
+		if ./float
+		then exit 0
+		else exit 1
+		fi
+EOF
+	then
+
+		echo "seems to be alright."
+		fflag=""
+	else
+		echo " "
+		echo "The C compiler seems to need a special flag for"
+		echo "loading (probably software) floating point routines."
+		echo $n "What flag is needed [default $fflagdef] $c"
+		read fflag
+		case $fflag in
+		'')	fflag="$fflagdef";;
+		esac
+		$cc $cflags -O $fflag float.c $ldflags -o float >/dev/null 2>&1
+		until sh 2>/dev/null <<EOF
+			if ./float
+			then echo "Flag $fflag seems to be alright."
+			     exit 0
+			else exit 1
+			fi
+EOF
+		do
+			echo "This flag doesn't seem to work."
+			echo "Try again ([RETURN] to give up) "
+			read fflag
+			case $fflag in
+			'')	echo "Giving up on floating point flag"
+				break;;
+			esac
+			$cc $cflags -O $fflag float.c $ldflags -o float >/dev/null 2>&1
+		done
+	fi
+	;;
+esac
+
+: 'Check for void type'
+echo " "
+echo $n "Checking to see if $cc accepts the void type ... $c"
+echo "void main() {}" >void.c
+
+if $cc $cflags -c void.c $ldflags >/dev/null 2>&1
+then
+	no_void="#undef"
+	echo "yes, it does."
+else
+	no_void="#define"
+	echo "no, it doesn't."
+	echo "We will #define NO_VOID and use an empty VOID in casts."
+fi
+
+: 'Now start looking for functions and header files we need'
+
+: 'tty or termio system?'
+echo " "
+echo $n "Looking for termio or sgtty system ... $c"
+termio=""
+cat >term.c <<EOF
+#include <termio.h>
+struct termio oldtty, newtty;
+#define gtty(fd,bp) ioctl(fd, TCGETA, (char *) bp)
+main() { gtty(0, &oldtty); }
+EOF
+
+if $cc $cflags term.c $ldflags >/dev/null 2>&1
+then
+	termio="#define"
+	echo "found termio"
+else
+	cat >term.c <<EOF
+#include <sgtty.h> /* v7/BSD tty control */
+	struct sgttyb oldtty, newtty;
+	main() { gtty(0, &oldtty); }
+EOF
+
+	if $cc $cflags term.c $ldflags >/dev/null 2>&1
+	then
+		termio="#undef"
+		echo "found sgtty"
+	fi
+fi
+
+case $termio in
+'')	echo " "
+	echo "Neither termio.h nor sgtty.h found."
+	echo "See the symbol TERMIO in unix/os.h."
+	echo "See ./unix/trm.c, ./unix/keys.c and ./keys/abckeys.c"
+	echo "in case of problems."
+	termio="#undef "
+esac
+
+: 'Include <strings.h> or <string.h>?'
+echo " "
+echo $n "Looking for include file for string operations ... $c"
+
+strs="no_strs"
+for f in string.h strings.h
+do
+	cat >string.c << EOF
+#include <$f>
+	main() { int i; i=strlen("abc"); }
+EOF
+	if $cc $cflags string.c $ldflags >/dev/null 2>&1
+	then
+		strs="<$f>"
+		echo "found $f"
+		break
+	fi
+done
+case $strs in
+no_strs)
+	echo " "
+	echo "Neither strings.h nor string.h found."
+	echo "We will add some external definitions to ./unix/os.h."
+	;;
+esac
+
+: 'Some ATT System V have <unistd.h> for <sys/file.h>'
+: 'Some systems have both and may need either one, so we must check'
+echo " "
+echo $n "Looking for include file for access modes ... $c"
+
+modes="no_modes"
+for f in unistd.h sys/file.h
+do
+	echo "#include <$f>" >modes.c
+	echo "main() { int i; i= F_OK; }" >>modes.c
+
+	if $cc $cflags modes.c $ldflags >/dev/null 2>&1
+	then
+		modes="<$f>"
+		echo "found $f"
+		break
+	fi
+done
+case $modes in
+no_modes)
+	echo " "
+	echo "No access mode definitions found in sys/file.h or unistd.h."
+	echo "We will substitute our own definitions in ./unix/os.h."
+	;;
+esac
+
+: 'Determine type for signal handlers'
+case $no_void in
+"#undef")
+	echo " "
+	echo $n "Looking for type for signal handlers ... $c"
+	echo "#include <signal.h>" >sigtype.c
+	echo "main(){ void(*old)(); old= signal(SIGINT, SIG_IGN); }" >>sigtype.c
+	$cc $cflags -c sigtype.c $ldflags >warnings 2>&1
+	if test -s warnings
+	then
+		sigtype=int
+		echo "assuming int."
+	else
+		sigtype=void
+		echo "found void."
+	fi
+	;;
+*)	sigtype=int;;
+esac
+
+: 'termcap library for ABC editor'
+echo " "
+echo $n "Looking for termcap-like library routines ... $c"
+echo 'char *tgetent(); main(){ char buf[1024]; tgetent(buf, "dumb"); }' >term.c
+
+termlib=""
+for lib in -ltermcap -lcurses -ltermlib /usr/local/lib/libtermcap.a /usr/local/lib/libcurses.a /usr/local/lib/libtermlib.a
+do 
+	if $cc $cflags term.c $ldflags $lib >/dev/null 2>&1
+	then
+		termlib="$lib"
+		echo "found $termlib"
+		break;
+	fi
+done
+
+case $termlib in
+"")
+	if ./readyn "I couldn't find a termcap-like library; is there one?"
+	then
+		termlib="ask_it"
+	else
+		termlib="our_own"
+		cat <<\EOF
+We will setup ./Makefile to use the public domain version of the
+termcap routines in ./tc. Your users must set the $TERMCAP and
+$TERM environment variables appropriately in their profile; or you
+can install shell scripts that arrange these.
+However, it would be better if your system administrator installed
+termcap in the proper places. You should run Setup again after she
+has done so.
+See ./tc/README for details.
+EOF
+	fi
+esac
+while test "$termlib" = "ask_it" -o "$termlib" = "try_again"; do
+	case $termlib in
+	ask_it)
+		echo " "
+		echo "Please specify where the termcap-like routines are kept"
+		echo $n " (either full pathname or -lxxx option) $c"
+		;;
+	try_again)
+		echo $n "Please try again (full pathname or -lyyy option) $c"
+		;;
+	esac
+	read termlib
+	case $termlib in
+	-l*)
+		echo "Hope $termlib will do the job."
+		;;
+	/*)
+		if test -r $termlib
+		then
+			echo "Ok, we will try $termlib."
+		else
+			echo "$termlib does not appear to exist."
+			termlib="try_again"
+		fi
+		;;
+	*)
+		echo "$termlib is not a valid library specification."
+		termlib="try_again"
+		;;
+	esac
+done
+
+: 'readdir library'
+echo " "
+echo $n "Looking for readdir library routines ... $c"
+
+readdir="#undef "
+for dirent in dirent direct
+do
+	for f in dirent.h sys/dirent.h dir.h sys/dir.h ndir.h
+	do
+		cat >dir.c <<EOF
+#include <sys/types.h>
+#include <$f>
+		main() { DIR *dp; struct $dirent *dirp; char *name;
+			dp=opendir(".");
+			dirp=readdir(dp);
+			name= dirp->d_name;
+		}
+EOF
+
+		if $cc $cflags dir.c $ldflags >/dev/null 2>&1
+		then
+			readdir="#define"
+			dirh="<$f>"
+			echo "found them in $f with struct $dirent"
+			break
+		fi
+	done
+	case $readdir in
+	"#define") break;;
+	esac
+done
+
+case $readdir in
+"#define") ;;
+*)	echo " "
+	echo "Couldn't find them; we'll use our own."
+	dirent=direct
+	;;
+esac
+
+: 'Some readdirs use "struct dirent" and some use "struct direct"'
+: 'The ABC code uses the (older) direct, which we #define for dirent'
+
+case $dirent in
+dirent) direct="#undef ";;
+direct) direct="#define";;
+esac
+
+: 'A timer'
+: 'There is no standard timer that gives more than 1 second accuracy'
+: 'However, most systems supply the BSD gettimeofday(), and others have'
+: 'ftime().; the major problem is to discover the correct order of the'
+: 'header files.'
+
+echo " "
+echo $n "Looking for time of day library routines ... $c"
+
+gettimeofday="#undef "
+ftime="#undef "
+
+for timeheaders in "time.h" "sys/time.h" "time.h sys/time.h" "sys/time.h time.h"
+do
+	echo "#include <sys/types.h>" > time.c
+	for h in $timeheaders
+	do
+		echo "#include <$h>" >> time.c
+	done
+
+	cat >>time.c <<EOF
+	main() {
+		struct timeval tp; struct timezone tzp;
+		struct tm *lt;
+		long secs1970, fraction;
+		gettimeofday(&tp, &tzp);
+		secs1970= tp.tv_sec;
+		fraction= tp.tv_usec;
+		lt = localtime(&secs1970);
+		printf("%d:%d:%d %d:%d:%d\n",
+			lt->tm_year + 1900,
+			lt->tm_mon + 1,
+			lt->tm_mday,
+			lt->tm_hour,
+			lt->tm_min,
+			lt->tm_sec);
+	}
+EOF
+	if $cc $cflags time.c $ldflags >/dev/null 2>&1
+	then
+		echo "found gettimeofday() with header $timeheaders"
+		gettimeofday="#define"
+		break
+	fi
+done
+
+case $gettimeofday in
+"#undef")
+	echo " "
+	echo $n "Couldn't find gettimeofday(); looking for ftime() ... $c"
+	cat >time1.c <<EOF
+#include <sys/types.h>
+#include <time.h>
+#include <sys/timeb.h>
+	main() {
+		struct tm *lt; struct timeb tt;
+
+	        ftime(&tt);
+        	lt = localtime((long*) &tt.time);
+		printf("%d:%d:%d %d:%d:%d\n",
+			lt->tm_year + 1900,
+			lt->tm_mon + 1,
+			lt->tm_mday,
+			lt->tm_hour,
+			lt->tm_min,
+			lt->tm_sec);
+	}
+EOF
+
+	if $cc $cflags time1.c $ldflags >/dev/null 2>&1
+	then
+		ftime="#define"
+		timeheaders="time.h sys/timeb.h"
+		echo "found it"
+	else
+		cat >time2.c <<EOF
+#include <sys/types.h>
+#include <time.h>
+#include <sys/timeb.h>
+		main() {
+			struct tm *lt; struct timeb tt;
+			tt.millitm= 0;
+		}
+EOF
+		if $cc $cflags time2.c $ldflags >/dev/null 2>&1
+		then
+			echo " "
+			echo "*** I could find <sys/timeb.h>, but not ftime()"
+			echo "*** Please check the flags you gave for $cc"
+			echo " "
+		fi
+	fi
+
+	case $ftime in
+	"#undef")
+		echo $n "No ftime() found, looking for time() ... $c"
+		cat >time3.c <<EOF
+#include <time.h>
+		main() {
+			long ttt; struct tm *lt;
+			ttt= time((long*)0);
+			lt= localtime(&ttt);
+
+			printf("%d:%d:%d %d:%d:%d\n",
+				lt->tm_year + 1900,
+				lt->tm_mon + 1,
+				lt->tm_mday,
+				lt->tm_hour,
+				lt->tm_min,
+				lt->tm_sec);
+		}
+EOF
+		if $cc $cflags time3.c $ldflags >/dev/null 2>&1
+		then
+			echo "found it: the ABC function 'now' will only return entire seconds."
+			timeheaders=time.h
+		else
+			echo " "
+			echo "*** Couldn't find any timer"
+			echo " "
+		fi
+	esac
+	;;
+esac
+
+echo " "
+echo $n "Looking for errno ... $c"
+
+for errno in "" "extern int errno;" "int errno;"
+do
+	echo "#include <errno.h>" > errno.c
+	echo "$errno" >> errno.c
+	echo "main() { errno=0; }" >> errno.c
+
+	if $cc $cflags errno.c $ldflags >/dev/null 2>&1
+	then
+		case $errno in
+		"int errno;")
+			echo "couldn't find it; using our own";;
+		*)
+			echo "found it"
+		esac
+		break;
+	fi
+done
+
+: 'Various other functions'
+
+echo " "
+echo "Looking for various functions ..."
+
+make='make $(MFLAGS)'
+strchr="strchr"
+mkdir="#undef "
+rename="#undef "
+select="#undef "
+getwd="#undef "
+getcwd="#undef "
+
+echo 'main() { strchr("abc", 0);}' > strchr.c
+if $cc $cflags strchr.c $ldflags >/dev/null 2>&1
+then
+	echo "Found strchr()"
+else
+	echo $n "Couldn't find strchr() ... $c"
+	echo 'main() { index("abc", 0);}' > strchr.c
+	if $cc $cflags strchr.c $ldflags >/dev/null 2>&1
+	then
+		strchr="index"
+		echo "found index() instead"
+	else
+		echo " "
+		echo "*** Couldn't find either strchr() or index()"
+	fi
+fi
+
+echo 'main() { mkdir("junk", 0);}' > mkdir.c
+if $cc $cflags mkdir.c $ldflags >/dev/null 2>&1
+then
+	mkdir="#define"
+	echo "Found mkdir()"
+else
+	echo "Couldn't find mkdir(); we'll use our own"
+fi
+
+echo 'main(){char buf[1024];getcwd(buf, 1024);}' >getcwd.c
+if $cc $cflags getcwd.c $ldflags >/dev/null 2>&1
+then
+	getcwd="#define"
+	echo "Found getcwd()"
+else
+	echo "Couldn't find getcwd(); looking for getwd() ..."
+
+	echo 'main(){char buf[1024];getwd(buf);}' >getwd.c
+	if $cc $cflags getwd.c $ldflags >/dev/null 2>&1
+	then
+		getwd="#define"
+		echo "Found getwd()"
+	else
+		echo "Couldn't find getwd(), so we'll use our own instead"
+	fi
+fi
+
+echo 'main() { rename("b", "abc");}' > rename.c
+if $cc $cflags rename.c $ldflags >/dev/null 2>&1
+then
+	rename="#define"
+	echo "Found rename()"
+else
+	echo "Couldn't find rename(); we'll use our own"
+fi
+
+cat >select.c <<EOF
+#include <sys/types.h>
+#include <sys/time.h>
+main() {
+	int width;
+	fd_set *readfds, *writefds, *exceptfds;
+	struct timeval *timeout;
+	select(width, readfds, writefds, exceptfds, timeout);
+}
+EOF
+
+selectheader=""
+if $cc $cflags select.c $ldflags >/dev/null 2>&1
+then
+	select="#define"
+	echo "Found select()"
+else
+	: 'Those AIX wretches'
+	cat >select.c <<EOF
+#include <sys/types.h>
+#include <sys/time.h>
+#include <sys/select.h>
+	main() {
+		int width;
+		fd_set *readfds, *writefds, *exceptfds;
+		struct timeval *timeout;
+		select(width, readfds, writefds, exceptfds, timeout);
+	}
+EOF
+	if $cc $cflags select.c $ldflags >/dev/null 2>&1
+	then
+		select="#define"
+		selectheader="sys/select.h"
+		echo "Found select() with header sys/select.h"
+	else
+		echo "Couldn't find select() (so we won't use it)."
+	fi
+fi
+
+echo " "
+echo $n "Checking whether 'make' uses MAKEFLAGS or MFLAGS ... $c"
+
+cat >Mf <<'EOF'
+SHELL= /bin/sh
+top:
+	@if test ! -z "$(MAKEFLAGS)"; then echo MAKE; else if test ! -z "$(MFLAGS)"; then echo M; fi; fi
+EOF
+
+case `make -f Mf -i` in
+MAKE)
+	echo "it uses MAKEFLAGS"
+	make='make -$(MAKEFLAGS)'
+	;;
+M)
+	echo "it uses MFLAGS"
+	make='make $(MFLAGS)'
+	;;
+*)
+	echo "it doesn't seem to use either"
+	make="make"
+	;;
+esac
+
+case $cflags in
+'') cfl=none;;
+*)  cfl="$cflags";;
+esac
+
+case $ldflags in
+'') lfl=none;;
+*)  lfl="$ldflags";;
+esac
+
+cat >answers <<EOF
+rootdef="$rootdir"
+abcdef="$abcdir"
+libdef="$libdir"
+mandef="$mandir"
+ccdef="$cc"
+cflagsdef="$cfl"
+ldflagsdef="$lfl"
+fflagdef="$fflag"
+EOF
+
+case $RM in
+yes)
+	for f in main float void term string modes sigtype term strchr mkdir rename time time1 time2 time3 select dir getcwd getwd errno
+	do
+		rm -f $f.c $f.o
+	done
+	rm -f main.out a.out core float warnings Mf
+esac
+
+echo " "
+echo "End of configuration questions for the ABC system."
+
+edit="ed -"
+
+: 'Get generic copies of Makefile and unix/comp.h and unix/os.h.'
+: 'Since some tars leave the owner of the tape as the owner of the files'
+: 'this will make sure the edit scripts will not fail.'
+
+echo " "
+echo "Creating Makefile from Makefile.unix."
+
+rm -f Makefile
+touch Makefile || { echo "Oops!" && exit 1; }
+cat >Makefile <<EOF
+# This file was generated and edited by the Setup command.
+# To make lasting changes edit the files Makefile.unix and Setup,
+# and run Setup again.
+# 
+EOF
+chmod 644 Makefile
+cat Makefile.unix >>Makefile || { echo "Oops!" && exit 1; }
+
+$edit Makefile <<EOF
+/^MAKE=/s?.*?MAKE= $make?
+/^CC=/s?.*?CC= $cc?
+/^CFLAGS=/s?CFLAGS=?CFLAGS= $cflags ?
+/^LDFLAGS=/s?LDFLAGS=?LDFLAGS= $ldflags?
+/^FLOAT=/s?.*?FLOAT= $fflag?
+/^TERMLIB=/s?.*?TERMLIB= $termlib?
+w
+q
+EOF
+
+case $public in
+yes)
+	$edit Makefile <<EOF
+	/^DESTABC=/s?.*?DESTABC= $abcdir?
+	/^DESTLIB=/s?.*?DESTLIB= $libdir?
+	/^DESTMAN=/s?.*?DESTMAN= $mandir?
+	w
+	q
+EOF
+	;;
+esac
+
+case $termlib in
+our_own)
+	$edit Makefile <<EOF
+	/TERMLIB=/s?.*?TERMLIB=?
+	/#OWNTLIB=/s?#??
+	/#KOWNTLIB=/s?#??
+	/#OWNTBASE=/s?#??
+	w
+	q
+EOF
+	;;
+esac
+
+echo "Creating unix/comp.h from unix/comp.h.gen."
+
+rm -f unix/comp.h.new
+
+cat >unix/comp.h.new <<EOF
+/* This file was generated and edited by the Setup command. */
+/* To make lasting changes edit the files unix/comp.h.gen and Setup, */
+/* and run Setup again. */
+
+EOF
+
+cat unix/comp.h.gen >>unix/comp.h.new || { echo "Oops!" && exit 1; }
+
+$edit unix/comp.h.new <<EOF
+/^#define SIGTYPE/s?.*?#define SIGTYPE $sigtype?
+/^#undef NO_VOID/s?#undef?$no_void?
+w
+q
+EOF
+
+case $strchr in
+strchr)	$edit unix/comp.h.new <<EOF
+/#define strchr/d
+/#define strrchr/d
+w
+q
+EOF
+;;
+esac
+
+if test -r unix/comp.h
+then
+	if cmp -s unix/comp.h unix/comp.h.new
+	then rm unix/comp.h.new
+	else
+		mv unix/comp.h.new unix/comp.h
+		chmod 644 unix/comp.h
+	fi
+fi
+
+echo "Creating unix/os.h from unix/os.h.gen."
+
+rm -f unix/os.h.new
+
+cat >unix/os.h.new <<EOF
+/* This file was generated and edited by the Setup command. */
+/* To make lasting changes edit the files unix/os.h.gen and Setup, */
+/* and run Setup again. */
+
+EOF
+
+cat unix/os.h.gen >>unix/os.h.new || { echo "Oops!" && exit 1; }
+
+: 'insert extra includes'
+
+for header in $timeheaders
+do
+	$edit unix/os.h.new <<EOF
+	/^#define/i
+#include <$header>
+.
+w
+q
+EOF
+done
+
+: 'select() needs sys/time.h, but only if we havent already included it'
+
+case $select in
+"#define")
+	case $timeheaders in
+	*sys/time.h) ;;
+	*)
+		$edit unix/os.h.new <<EOF
+		/^#define/i
+#include <sys/time.h>
+.
+w
+q
+EOF
+		;;
+	esac
+	;;
+esac
+
+case $selectheader in
+"") ;;
+*)
+	$edit unix/os.h.new <<EOF
+	/^#define/i
+#include <$selectheader>
+.
+w
+q
+EOF
+	;;
+esac
+
+$edit unix/os.h.new <<EOF
+/^#include <strings.h>/s?<strings.h>?$strs?
+/^#include <sys\/file.h>/s?<sys/file.h>?$modes?
+/^#include <dir.h>/s?<dir.h>?$dirh?
+/^#define HAS_FTIME/s?#define?$ftime?
+/^#define HAS_GETTIMEOFDAY/s?#define?$gettimeofday?
+/^#define HAS_MKDIR/s?#define?$mkdir?
+/^#define HAS_RENAME/s?#define?$rename?
+/^#define HAS_SELECT/s?#define?$select?
+/^#define HAS_READDIR/s?#define?$readdir?
+/^#define HAS_DIRECT/s?#define?$direct?
+/^#define HAS_GETWD/s?#define?$getwd?
+/^#undef  HAS_GETCWD/s?#undef ?$getcwd?
+/^#undef  TERMIO/s?#undef ?$termio?
+/^extern int errno;/s?.*?$errno?
+w
+q
+EOF
+
+case $strs in
+no_strs)
+	case $strchr in
+	"index")	index=index; rindex=rindex;;
+	"strchr")	index=strchr; rindex=strrchr;;
+	esac
+	$edit unix/os.h.new <<EOF
+/#include no_strs/c
+
+extern char *strcat();
+extern int strcmp();
+extern int strncmp();
+extern char *strcpy();
+extern char *strncpy();
+extern int strlen();
+extern char *$index();
+extern char *$rindex();
+
+.
+w
+q
+EOF
+;;
+esac
+
+case $modes in
+no_modes)
+	$edit unix/os.h.new <<EOF
+/#include no_modes/c
+
+#define R_OK 4
+#define W_OK 2
+#define F_OK 0
+.
+w
+q
+EOF
+;;
+esac
+
+if test -r unix/os.h
+then
+	if cmp -s unix/os.h unix/os.h.new
+	then rm unix/os.h.new
+	else
+		mv unix/os.h.new unix/os.h
+		chmod 644 unix/os.h
+	fi
+fi
+
+echo " "
+echo "done."
+
+echo " "
+echo "This completes the setup of the ABC system."
+
+case $remote in
+'remote')
+	cat <<EOF
+You should first compile mkmach (from ./mkmach.c and ./unix/comp.h)
+with 'make mkmach' here, run it on the remote machine and copy the
+result to ./unix/mach.h.
+After that you can proceed here with 'make all'.
+EOF
+	if test ! -d "$rootdir"
+	then
+		echo " "
+		echo "You should 'mkdir $rootdir' before 'make install'."
+	fi
+	;;
+*)	echo "You can now try 'make all'."
+	;;
+esac
+
+case $public in
+yes)
+	if test ! -d "$rootdir$abcdir"
+	then
+		echo " "
+		echo "You should 'mkdir $rootdir$abcdir' before 'make install'."
+	fi
+	if test ! -d "$rootdir$libdir"
+	then
+		echo "You should 'mkdir $rootdir$libdir' before 'make install'."
+	fi
+	if test ! -d "$rootdir$mandir"
+	then
+		echo "You should 'mkdir $rootdir$mandir' before 'make install'."
+	fi
+	;;
+esac
+
+exit 0

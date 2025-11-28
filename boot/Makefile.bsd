@@ -1,0 +1,101 @@
+#
+# BSD Makefile for booting grammar tables with mktable from grammar file.
+#
+
+# --- Where to install the stuff ---
+
+CFILE=../bed/e1tabl.c
+HFILE=../ehdrs/tabl.h
+
+# --- What is the C preprocessor called ---
+#
+# BSD-only feature;
+# check "man 1 cc" how to invoke the C preprocessor on your system
+
+CPP=	/bin/cc -E
+
+# --- Flags to the C compiler ---
+
+BINCL=	-I../bhdrs -I../ehdrs -I../uhdrs
+DEFS=	-DNDEBUG -DBSD
+CFLAGS= -O $(DEFS) $(BINCL)
+LDFLAGS=-s
+LIBS=	
+GDEFS=
+
+# --- Stuff for lint ---
+
+LINT=		lint
+LINTFLAGS=	-abh
+LBINCL=		$(BINCL)
+
+# --- Relevant files ---
+
+OBJS=	main.o alloc.o read.o fill.o comp.o dump.o code.o
+
+SRCS=	main.c alloc.c read.c fill.c comp.c dump.c ../bed/e1code.c
+
+HDRS=	../bhdrs/b.h main.h ../ehdrs/code.h lang.h
+
+# --- Main entries of the makefile ---
+
+all: tabl.c.out tabl.h.out
+
+tabl.c.out tabl.h.out: grammar mktable
+	mktable -g grammar -h tabl.h -t tabl.c.out -i tabl.h.out
+
+grammar: grammar.abc lang.h
+	$(CPP) $(GDEFS) grammar.abc 2>/dev/null | sed -e "/^$$/d" -e "/^#/d" >grammar
+
+mktable: $(OBJS)
+	$(CC) $(LDFLAGS) $(OBJS) $(LIBS) -o mktable
+
+install: $(CFILE) $(HFILE)
+
+$(CFILE): tabl.c.out
+	cp tabl.c.out $(CFILE)
+
+$(HFILE): tabl.h.out
+	cp tabl.h.out $(HFILE)
+
+clean:
+	rm -f *.o mktable grammar tabl.c.out tabl.h.out tabl.c tabl.h
+
+clobber: clean
+	rm -f lint tags
+
+code.o: ../bed/e1code.c
+	$(CC) -c $(CFLAGS) ../bed/e1code.c -o code.o
+
+# --- Utilities for the programmer ---
+
+mflags:
+	echo MFLAGS=\"$(MFLAGS)\", MAKEFLAGS=\"$(MAKEFLAGS)\"
+
+# If your UNIX isn't BSD4.2 or higher, use:
+# MKDEP=../scripts/mkdep
+MKDEP=$(CC) -M
+
+Makefile: ALWAYS
+	rm -f Makefile
+	(echo "# EDIT MY ANCESTOR Makefile.bsd"; \
+	 echo "# AND SAY 'make -f Makefile.bsd Makefile'"; \
+	 cat Makefile.bsd; \
+	 $(MKDEP) $(DEFS) $(BINCL) $(SRCS); \
+	) >Makefile
+
+lint:	$(SRCS) $(HDRS)
+	$(LINT) $(LINTFLAGS) $(DEFS) $(LBINCL) $(SRCS) >lint
+
+tags:	$(HDRS) $(SRCS)
+	rm -f tags
+	ctags $(HDRS) $(SRCS)
+
+test:	all
+	cp tabl.h.out tabl.h
+	cp tabl.c.out tabl.c
+	cc -c $(CFLAGS) tabl.c
+
+ALWAYS:	#dummy
+
+###

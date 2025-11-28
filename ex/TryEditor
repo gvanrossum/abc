@@ -1,0 +1,38 @@
+: 'test ABC editor'
+
+case $1 in
+local)	abc=../abc;;
+*)	abc=abc;;
+esac
+
+cat <<EOF
+You're about to try the ABC editor.
+
+First wait for the prompt '>>> ?' to appear.
+Then press 's' to get 'S?ELECT:'.
+Next press 't' to see 'ST?ART'.
+Now press the [TAB]-key to accept this suggestion.
+Finally press the [RETURN]-key to start execution.
+
+ABC will prompt with '?' for some lines of text, until you type an empty line.
+After some time it will then generate a small poem from your twisted text.
+
+You can undo any change by pressing [BACKSPACE].
+You can get help with ? or [ESC]-?.
+You can leave the ABC editor with [ESC]-[ESC].
+You can leave 'abc' by typing QUIT.
+
+See 'HOW TO TRY THE ABC EDITOR' in ./EDITOR for more information.
+
+Loading ABC ...
+
+EOF
+
+$abc -g `pwd` -w try
+
+echo " "
+echo "If you are satisfied about the ABC editor"
+case $1 in
+local)	echo "you can make ABC public with 'make install'.";;
+*)	echo "you can clean on the compilation machine with 'make clean'.";;
+esac

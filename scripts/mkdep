@@ -1,0 +1,25 @@
+: 'Shell script to create dependency lines for inclusion in a Makefile.'
+: 'This is done by pulling each file through the C preprocessor,'
+: 'filtering all "#<file> 1" lines out and doing some substitutions'
+: 'on them.  Since the format of these lines may be different on your'
+: 'system, you may have to modify the sed command below.'
+
+: 'The following should invoke your C preprocessor:'
+: 'check "man 1 cc" on non-BSD systems'
+CPP="cc -E"
+
+ARGS=
+while :
+do
+	case $1 in
+	-*)	ARGS="$ARGS $1"; shift;;
+	*)	break;;
+	esac
+done
+
+for file
+do
+	obj=`basename $file .c`.o
+	$CPP $ARGS $file |
+	sed -n '/^# 1 "\(.*\)".*$/s//'$obj': \1/p'
+done

@@ -1,0 +1,68 @@
+Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1988-2011.
+
+HOW TO INSTALL ABC ON A UNIX SYSTEM:
+
+You will need 2.5 megabytes in total to compile and load the ABC system.
+To start type:
+
+        ./Setup
+
+which will ask you some questions to set the ABC system up on your
+installation.  You can call "Setup" any number of times without spoiling
+files.  So run it once to see what questions you will be asked.  If you
+don't know the answer to some question, you can run it again.
+
+        make all
+
+will compile and load the ABC system, producing the programs "abc" and
+"abckeys" locally in this directory.  You can test the ABC interpreter with:
+
+        make examples
+
+This runs some examples in ./ex. It does not test the ABC editor, however;
+that can only be done interactively with
+
+        make try_editor
+
+Consult the sheet "HOW TO TRY THE ABC EDITOR" (also in ./EDITOR).
+
+If all is well and you want to make ABC public
+
+        make install
+
+will do some compiling to get the right pathnames in, and install the binaries
+"abc" and "abckeys", the "abc.1" manual file, and the auxiliary files in the
+directories you indicated during setup.  Finally
+
+        make clean
+
+will clean all intermediate object files from the source directories.
+
+If you have made ABC public, all necessary files have been copied to the
+public places, and you can get rid of the entire ABC source directory.
+
+HOW TO TACKLE PROBLEMS DURING INSTALLATION:
+
+If there are any problems, don't panic. See ./PROBLEMS for advice.  Also
+edit the example Bug Report form in ./doc to communicate the problem to us.
+We can then send out diffs for fixed problems in the future.
+
+Currently the system doesn't seem to run properly on systems where the
+length of an integer is different to the length of a pointer; this
+means on 64 bit systems you should compile as a 32 bit binary.
+
+You need to have a termcap-compatible library installed. On Ubuntu go
+to the Ubuntu Software Centre, and search for and install
+libncurses5-dev (or similarly, from a terminal run
+		sudo apt-get install libncurses5-dev
+).
+
+Above all, we would be very grateful to receive any comments you have about
+the setup procedure, or the ABC system in general, on how to make it easier
+to use.
+
+HOW TO PORT ABC TO OTHER OPERATING SYSTEMS:
+
+If you want to port ABC to another system, consult ./generic/README.
+
+Good luck!

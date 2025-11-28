@@ -1,0 +1,33 @@
+termcap - terminal capabilities, library and database.
+
+The routines provided by the library 'libtermcap.a' extract and use
+capabilities from the terminal database 'termcap'.
+
+It is included in the Mark 2 distribution of ABC because the ABC editor
+uses it, it is in the public domain, and there are UNIXes without it.
+If '../Setup' finds the termcap in your system it uses that one.
+
+If you don't have termcap available on your system the best thing to do
+is to install it and run ../Setup again.
+
+	make DEST=/usr/lib ETC=/etc install
+
+will install the library and database at their usual places.  If these
+are different on your system you will probably have to change pathnames
+in the sources too. The files tc?.c test out the library routines.
+Don't forget to copy the manual pages from termcap.3X and termcap.5
+to your systems manual.
+
+For more information consult those manual pages.
+
+For any program to work with termcap, the user should set the $TERM and
+$TERMCAP environment variables in her profile. You can also install
+abc and abckeys as shell scripts, calling the executable binaries after
+setting these, e.g. for abc:
+	
+	: set TERMCAP environment variable
+	: ${TERMCAP=$ABC_LIB/termcap}
+	export TERMCAP
+	exec /usr/new/lib/abc/abc.exe
+
+if the latter is the name you gave the binary.

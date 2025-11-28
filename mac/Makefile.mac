@@ -1,0 +1,311 @@
+# Makefile to link MacABC
+
+COptions= -DNDEBUG
+
+.c.o	Ä	.c
+	If "{targDir}" == ":gobjs:"
+		{C} {COptions} -g {depDir}{default}.c -o {targDir}{default}.c.o
+	Else
+		{C} {COptions} {depDir}{default}.c -o {targDir}{default}.c.o
+	End
+
+rfiles= about.r bundle.r combine.r dialogs.r menus.r messages.r
+
+cfiles= b1file.c b1grab.c b1memo.c b1outp.c getopt.c ¶
+ 	e1cell.c e1code.c e1comm.c e1deco.c e1edit.c e1edoc.c e1erro.c ¶
+	e1eval.c e1goto.c e1gram.c ¶
+	e1ins2.c e1inse.c e1lexi.c e1line.c e1move.c e1node.c e1outp.c ¶
+	e1que1.c ¶
+	e1que2.c e1save.c e1scrn.c e1spos.c e1sugg.c e1supr.c e1tabl.c ¶
+	e1term.c e1wide.c ¶
+	i1com.c i1fun.c i1nua.c i1nuc.c i1nug.c i1nui.c i1num.c ¶
+	i1nuq.c i1nur.c i1nut.c i1tra.c ¶
+	e1etex.c i1btr.c i1lta.c i1obj.c i1tex.c i1tlt.c ¶
+	i2ana.c i2cmd.c i2dis.c i2exp.c i2fix.c i2gen.c i2syn.c ¶
+	i2tar.c i2tes.c i2uni.c ¶
+	i2tca.c i2tce.c i2tcp.c i2tcu.c ¶
+	i3bws.c i3com.c i3env.c i3err.c i3fil.c i3fpr.c i3gfx.c i3imm.c ¶
+	i3in2.c i3ini.c i3int.c ¶
+	i3loc.c i3scr.c i3sou.c i3sta.c i3typ.c ¶
+	i4fil.c i4grp.c i4inp.c i4lis.c i4pack.c i4out.c i4rec.c ¶
+	muabort.c muaccess.c mugetwd.c muset_open_hook.c mustat.c musync.c ¶
+	m1about.c m1appfiles.c m1askfile.c m1askperm.c m1bio.c m1dir.c m1err.c ¶
+	m1file.c m1getc.c m1help.c m1macabc.c m1main.c m1menus.c m1mess.c ¶
+	m1os.c m1print.c m1prselect.c m1time.c m1trm.c ¶
+	mess2rez.c mkconfig.c mkrelease.c 
+
+hfiles= args.h b.h b0lan.h bcom.h bedi.h bfil.h bgfx.h bint.h bmem.h ¶
+	bobj.h cell.h code.h conf.h config.h defs.h dir.h erro.h etex.h ¶
+	feat.h getc.h getopt.h gram.h i0err.h i1num.h i1tlt.h i2exp.h ¶
+	i2gen.h i2nod.h i2par.h i2stc.h i3bws.h i3env.h i3ext.h i3in2.h ¶
+	i3int.h i3scr.h i3sou.h i3sta.h i3typ.h i4bio.h intercept.h ¶
+	keys.h mac.h macabc.h macdefs.h node.h os.h osconf.h queu.h release.h ¶
+	rez.h supr.h sys_stat.h sys_types.h tabl.h trm.h abcmenus.h
+
+libs= :objs:libbbed1.o :objs:libbed2.o :objs:libbed3.o ¶
+	:objs:libbint1.o :objs:libbint2.o ¶
+	:objs:libbint3a.o :objs:libbint3b.o ¶
+	:objs:libbtrstcmu.o :objs:libbiomac.o
+
+objects={libs}
+
+gobjects= :gobjs:libbbed1.o :gobjs:libbed2.o :gobjs:libbed3.o ¶
+	:gobjs:libbint1.o :gobjs:libbint2.o ¶
+	:gobjs:libbint3a.o :gobjs:libbint3b.o ¶
+	:gobjs:libbtr.o :gobjs:libstcmu.o :gobjs:libbiomac.o
+
+# Set always to ALWAYS if you always want to do sub-makes
+
+always=
+
+all	Ä MacABC
+
+debug Ä MacABC-g
+
+### use following as "mk -f Makefile.mac depend":
+depend Ä config.h release.h
+	depend -I{CIncludes} -o Dep_m {cfiles}
+	Setfile -t TEXT -c 'MPS ' Dep_m
+	Target Dep_m
+	Replace -c ° /¥([bgeim])¨1/ ":objs:¨1" Dep_m
+	cat Makefile.mac Dep_m >Makefile
+
+install Ä MacABC
+	duplicate -y MacABC "raincoat:MacABC.dist:MacABC"
+
+clean Ä
+	delete -p :Å.o :Å.out :objs:Å.o
+	delete -p :Dep_m :mess2rez :messages.r
+
+clobber Ä clean
+	delete -p mkconfig MacABC
+
+config Ä config.h
+
+config.h Ä mkconfig
+	mkconfig >config.h
+
+mkconfig Ä mkconfig.c.o
+	Link -w -c "MPS " -t "MPST" mkconfig.c.o ¶
+		"{CLibraries}"CRuntime.o ¶
+		"{CLibraries}"StdCLib.o ¶
+		"{CLibraries}"CSANELib.o ¶
+		"{CLibraries}"CInterface.o ¶
+		-o mkconfig
+
+MacABC	Ä about.out dialogs.out menus.out bundle.out ¶
+	  messages.out code.out combine.r
+	Rez -o MacABC -t APPL -c Mabc combine.r
+	Setfile -a B MacABC ### when the signature has changed
+	Duplicate -y MacABC "{Boot}"
+
+code.out Ä	{objects}
+	Link -b -p -o code.out -t APPL {objects} ¶
+		{CLibraries}CInterface.o ¶
+		{CLibraries}CRuntime.o ¶
+		{CLibraries}CSANELib.o ¶
+		{CLibraries}Math.o ¶
+		{CLibraries}StdCLib.o ¶
+		{Libraries}Interface.o
+
+mess2rez Ä	mess2rez.c.o
+	Link -w -o mess2rez -t MPST mess2rez.c.o ¶
+		{CLibraries}CInterface.o ¶
+		{CLibraries}CRuntime.o ¶
+		{CLibraries}CSANELib.o ¶
+		{CLibraries}StdCLib.o
+
+messages.r Ä mess2rez messages.mac
+	mess2rez <messages.mac >messages.r
+
+.out Ä .r
+	Rez -o {TargDir}{Default}.out -t XXXX Types.r {DepDir}{Default}.r
+
+bundle.out Ä release.h
+
+about.out Ä rez.h
+
+dialogs.out Ä rez.h
+
+:objs: Ä :
+
+bbed1objs=	:objs:b1file.c.o :objs:b1grab.c.o :objs:b1memo.c.o ¶
+	:objs:b1outp.c.o :objs:getopt.c.o ¶
+	:objs:e1cell.c.o :objs:e1code.c.o :objs:e1comm.c.o ¶
+	:objs:e1deco.c.o :objs:e1edit.c.o :objs:e1edoc.c.o ¶
+	:objs:e1erro.c.o :objs:e1eval.c.o :objs:e1goto.c.o ¶
+	:objs:e1gram.c.o :objs:e1ins2.c.o :objs:e1inse.c.o
+	
+:objs:libbbed1.o 	Ä	{bbed1objs}
+	lib -o :objs:libbbed1.o -sn Main=bbed1 {bbed1objs}
+
+bed2objs=	 :objs:e1lexi.c.o ¶
+	:objs:e1line.c.o :objs:e1move.c.o :objs:e1node.c.o ¶
+	:objs:e1outp.c.o :objs:e1que1.c.o :objs:e1que2.c.o
+
+:objs:libbed2.o 	Ä	{bed2objs}
+	lib -o :objs:libbed2.o -sn Main=bed2 {bed2objs}
+
+bed3objs=	:objs:e1save.c.o :objs:e1scrn.c.o ¶
+	:objs:e1spos.c.o :objs:e1sugg.c.o :objs:e1supr.c.o ¶
+	:objs:e1tabl.c.o :objs:e1term.c.o :objs:e1wide.c.o
+
+:objs:libbed3.o 	Ä	{bed3objs}
+	lib -o :objs:libbed3.o -sn Main=bed3 {bed3objs}
+
+bint1objs=	:objs:i1fun.c.o :objs:i1nua.c.o ¶
+	:objs:i1nuc.c.o :objs:i1nug.c.o :objs:i1nui.c.o :objs:i1num.c.o ¶
+	:objs:i1nuq.c.o :objs:i1nur.c.o :objs:i1nut.c.o
+
+:objs:libbint1.o 	Ä	{bint1objs}
+	lib -o :objs:libbint1.o -sn Main=bint1 {bint1objs}
+
+bint2objs=	:objs:i2ana.c.o :objs:i2cmd.c.o :objs:i2dis.c.o ¶
+	:objs:i2exp.c.o :objs:i2fix.c.o :objs:i2gen.c.o :objs:i2syn.c.o ¶
+	:objs:i2tar.c.o :objs:i2tes.c.o :objs:i2uni.c.o
+
+:objs:libbint2.o 	Ä	{bint2objs}
+	lib -o :objs:libbint2.o -sn Main=bint2 {bint2objs}
+
+bint3aobjs=	:objs:i3bws.c.o :objs:i3com.c.o :objs:i3env.c.o ¶
+	:objs:i3err.c.o :objs:i3fil.c.o :objs:i3fpr.c.o :objs:i3gfx.c.o ¶
+	:objs:i3imm.c.o :objs:i3in2.c.o :objs:i3ini.c.o :objs:i3int.c.o
+
+:objs:libbint3a.o	Ä	{bint3aobjs}
+	lib -o :objs:libbint3a.o -sn Main=bint3a {bint3aobjs}
+
+bint3bobjs=	:objs:i3loc.c.o :objs:i3scr.c.o :objs:i3sou.c.o ¶
+	:objs:i3sta.c.o :objs:i3typ.c.o
+
+:objs:libbint3b.o Ä	{bint3bobjs}
+	lib -o :objs:libbint3b.o -sn Main=bint3b {bint3bobjs}
+
+btrstcmuobjs=	:objs:i1com.c.o :objs:i1tra.c.o ¶
+	:objs:e1etex.c.o :objs:i1btr.c.o ¶
+	:objs:i1lta.c.o :objs:i1obj.c.o :objs:i1tex.c.o ¶
+	:objs:i1tlt.c.o ¶
+	:objs:i2tca.c.o :objs:i2tce.c.o :objs:i2tcp.c.o ¶
+	:objs:i2tcu.c.o ¶
+	:objs:muabort.c.o :objs:muaccess.c.o ¶
+	:objs:mugetwd.c.o :objs:muset_open_hook.c.o ¶
+	:objs:mustat.c.o :objs:musync.c.o
+
+:objs:libbtrstcmu.o Ä {btrstcmuobjs}
+	lib -o :objs:libbtrstcmu.o -sn Main=btrstcmu {btrstcmuobjs}
+
+biomacobjs=	:objs:i4fil.c.o :objs:i4grp.c.o ¶
+	:gobjs:i4inp.c.o :gobjs:i4lis.c.o :gobjs:i4pack.c.o ¶
+	:gobjs:i4out.c.o :gobjs:i4rec.c.o ¶
+	:objs:m1about.c.o :objs:m1appfiles.c.o :objs:m1askfile.c.o ¶
+	:objs:m1askperm.c.o :objs:m1bio.c.o :objs:m1err.c.o :objs:m1dir.c.o ¶
+	:objs:m1file.c.o :objs:m1getc.c.o ¶
+	:objs:m1help.c.o :objs:m1macabc.c.o :objs:m1main.c.o :objs:m1menus.c.o ¶
+	:objs:m1mess.c.o :objs:m1os.c.o :objs:m1print.c.o ¶
+	:objs:m1prselect.c.o :objs:m1time.c.o :objs:m1trm.c.o
+
+:objs:libbiomac.o Ä {biomacobjs}
+	lib -o :objs:libbiomac.o -sn Main=biomac {biomacobjs}
+
+MacABC-g	Ä about.out dialogs.out menus.out bundle.out ¶
+	  messages.out codeg.out combineg.r
+	Rez -o MacABC-g -t APPL -c Mabc combine.r
+	Setfile -a B MacABC-g ### when the signature has changed
+	Duplicate -y MacABC-g "{Boot}"	
+
+codeg.out Ä	{gobjects}
+	Link -b -p -o codeg.out -t APPL {gobjects} ¶
+		{CLibraries}CInterface.o ¶
+		{CLibraries}CRuntime.o ¶
+		{CLibraries}CSANELib.o ¶
+		{CLibraries}Math.o ¶
+		{CLibraries}StdCLib.o ¶
+		{Libraries}Interface.o
+
+:gobjs: Ä :
+
+bbed1gobjs=	:gobjs:b1file.c.o :gobjs:b1grab.c.o :gobjs:b1memo.c.o ¶
+	:gobjs:b1outp.c.o :gobjs:getopt.c.o ¶
+	:gobjs:e1cell.c.o :gobjs:e1code.c.o :gobjs:e1comm.c.o ¶
+	:gobjs:e1deco.c.o :gobjs:e1edit.c.o :gobjs:e1edoc.c.o ¶
+	:gobjs:e1erro.c.o :gobjs:e1eval.c.o :gobjs:e1goto.c.o ¶
+	:gobjs:e1gram.c.o :gobjs:e1ins2.c.o :gobjs:e1inse.c.o
+	
+:gobjs:libbbed1.o 	Ä	{bbed1gobjs}
+	lib -o :gobjs:libbbed1.o -sn Main=bbed1 {bbed1gobjs}
+
+bed2gobjs=	 :gobjs:e1lexi.c.o ¶
+	:gobjs:e1line.c.o :gobjs:e1move.c.o :gobjs:e1node.c.o ¶
+	:gobjs:e1outp.c.o :gobjs:e1que1.c.o :gobjs:e1que2.c.o
+
+:gobjs:libbed2.o 	Ä	{bed2gobjs}
+	lib -o :gobjs:libbed2.o -sn Main=bed2 {bed2gobjs}
+
+bed3gobjs=	:gobjs:e1save.c.o :gobjs:e1scrn.c.o ¶
+	:gobjs:e1spos.c.o :gobjs:e1sugg.c.o :gobjs:e1supr.c.o ¶
+	:gobjs:e1tabl.c.o :gobjs:e1term.c.o :gobjs:e1wide.c.o
+
+:gobjs:libbed3.o 	Ä	{bed3gobjs}
+	lib -o :gobjs:libbed3.o -sn Main=bed3 {bed3gobjs}
+
+bint1gobjs=	:gobjs:i1fun.c.o :gobjs:i1nua.c.o ¶
+	:gobjs:i1nuc.c.o :gobjs:i1nug.c.o :gobjs:i1nui.c.o :gobjs:i1num.c.o ¶
+	:gobjs:i1nuq.c.o :gobjs:i1nur.c.o :gobjs:i1nut.c.o
+
+:gobjs:libbint1.o 	Ä	{bint1gobjs}
+	lib -o :gobjs:libbint1.o -sn Main=bint1 {bint1gobjs}
+
+bint2gobjs=	:gobjs:i2ana.c.o :gobjs:i2cmd.c.o :gobjs:i2dis.c.o ¶
+	:gobjs:i2exp.c.o :gobjs:i2fix.c.o :gobjs:i2gen.c.o :gobjs:i2syn.c.o ¶
+	:gobjs:i2tar.c.o :gobjs:i2tes.c.o :gobjs:i2uni.c.o
+
+:gobjs:libbint2.o 	Ä	{bint2gobjs}
+	lib -o :gobjs:libbint2.o -sn Main=bint2 {bint2gobjs}
+
+bint3agobjs=	:gobjs:i3bws.c.o :gobjs:i3com.c.o :gobjs:i3env.c.o ¶
+	:gobjs:i3err.c.o :gobjs:i3fil.c.o :gobjs:i3fpr.c.o :gobjs:i3gfx.c.o ¶
+	:gobjs:i3imm.c.o :gobjs:i3in2.c.o :gobjs:i3ini.c.o :gobjs:i3int.c.o
+
+:gobjs:libbint3a.o	Ä	{bint3agobjs}
+	lib -o :gobjs:libbint3a.o -sn Main=bint3a {bint3agobjs}
+
+bint3bgobjs=	:gobjs:i3loc.c.o :gobjs:i3scr.c.o :gobjs:i3sou.c.o ¶
+	:gobjs:i3sta.c.o :gobjs:i3typ.c.o
+
+:gobjs:libbint3b.o Ä	{bint3bgobjs}
+	lib -o :gobjs:libbint3b.o -sn Main=bint3b {bint3bgobjs}
+
+btrgobjs=	:gobjs:i1com.c.o :gobjs:i1tra.c.o ¶
+	:gobjs:e1etex.c.o :gobjs:i1btr.c.o ¶
+	:gobjs:i1lta.c.o :gobjs:i1obj.c.o :gobjs:i1tex.c.o ¶
+	:gobjs:i1tlt.c.o 
+
+:gobjs:libbtr.o Ä {btrgobjs}
+	lib -o :gobjs:libbtr.o -sn Main=btr {btrgobjs}
+
+stcmugobjs= :gobjs:i2tca.c.o :gobjs:i2tce.c.o :gobjs:i2tcp.c.o ¶
+	:gobjs:i2tcu.c.o ¶
+	:gobjs:muabort.c.o :gobjs:muaccess.c.o ¶
+	:gobjs:mugetwd.c.o :gobjs:muset_open_hook.c.o ¶
+	:gobjs:mustat.c.o :gobjs:musync.c.o
+
+:gobjs:libstcmu.o Ä {stcmugobjs}
+	lib -o :gobjs:libstcmu.o -sn Main=stcmu {stcmugobjs}
+
+biomacgobjs=	:gobjs:i4fil.c.o :gobjs:i4grp.c.o ¶
+	:gobjs:i4inp.c.o :gobjs:i4lis.c.o :gobjs:i4pack.c.o ¶
+	:gobjs:i4out.c.o :gobjs:i4rec.c.o ¶
+	:gobjs:m1about.c.o :gobjs:m1appfiles.c.o :gobjs:m1askfile.c.o ¶
+	:gobjs:m1askperm.c.o :gobjs:m1bio.c.o :gobjs:m1err.c.o :gobjs:m1dir.c.o ¶
+	:gobjs:m1file.c.o :gobjs:m1getc.c.o ¶
+	:gobjs:m1help.c.o :gobjs:m1macabc.c.o :gobjs:m1main.c.o :gobjs:m1menus.c.o ¶
+	:gobjs:m1mess.c.o :gobjs:m1os.c.o :gobjs:m1print.c.o ¶
+	:gobjs:m1prselect.c.o :gobjs:m1time.c.o :gobjs:m1trm.c.o
+
+:gobjs:libbiomac.o Ä {biomacgobjs}
+	lib -o :gobjs:libbiomac.o -sn Main=biomac {biomacgobjs}
+
+ALWAYS Ä
+	# dummy rule
+
+###
+

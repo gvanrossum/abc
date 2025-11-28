@@ -1,0 +1,44 @@
+: readdir rootdir default remote message
+_rootdir=$1
+_default=$2
+_remote=$3
+_message=$4
+
+case $_remote in
+"") please_type="Please type the full pathname of a directory";;
+*) please_type="Please type the full pathname of a $_remote directory";;
+esac
+
+case  `echo -n foo` in
+-n*) n="" c='\c';;
+*) n=-n c="";;
+esac
+
+dir='blurfl'
+while test ! -d "$_rootdir$dir" ; do
+	case $dir in
+	blurfl)
+		(
+		echo " "
+		echo $please_type
+		echo "where you have write permission, where we can install"
+		echo $_message
+		echo $n "[default $_default] $c"
+		) >&2
+		;;
+	*) 	echo "$_rootdir$dir does not appear to exist." >&2
+		if ./readyn "Are you sure you typed the right name?" >&2
+		then
+			echo "Don't forget to make $_rootdir$dir before 'make install'." >&2
+			break
+		else
+			echo $n "Please try again [default $_default] $c" >&2
+		fi
+		;;
+	esac
+	read dir
+	case $dir in
+	"") dir=$_default;;
+	esac
+done
+echo $dir

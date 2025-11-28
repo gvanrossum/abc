@@ -1,0 +1,904 @@
+/* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1990. */
+
+PORTING ABC TO NEW OPERATING SYSTEMS
+# Lines beginning with a # are comments directed at the ABC group, and
+# will be grepped out in any version sent out.
+# In some places there are questions I couldn't answer.
+
+Most of the ABC implementation consists of machine and operating-
+system independent code.  Most of the ABC system is written to be
+maximally portable, and it even configures itself to the word-length,
+and similar, via mkmach.c
+
+For the greater part we use routines that are found in most C
+libraries, and have tried to make the amount of rewriting necessary as
+small as possible (though it could probably be made smaller).
+
+The non-portable parts, which must be adapted for each port are
+concentrated in one directory for each port.  The directory 'generic'
+is a skeleton version of the routines that have to be written if you
+port ABC to another machine.
+
+When porting, as a matter of style, please try to keep to the same
+programming style as used in the rest of the system, for instance
+marking functions with Visible or Hidden. We particularly try to avoid
+constructs of the form #ifdef <machine type>: we prefer either to find
+a solution valid for all machines, or an #ifdef based on the property
+that is different, rather than machine. Similarly, machine
+dependencies *must* be restricted to the one portability directory for
+the port.  All other directories are identical for the other
+implementations, and we would be reluctant to lose that property.
+Contact us in difficult cases.
+
+*************************************************************************
+* Please be sure that you send us the files you create and change so	*
+* that we can merge them back into our originals, and make them		*
+* available to others. Let us know your experiences with porting, and	*
+* above all don't be afraid to contact us for help (email address	*
+* abc@cwi.nl).								*
+*************************************************************************
+
+
+The following are the files in the generic directory, the visible
+functions, types and constants that have to be defined, and their
+purpose:
+
+******* File comp.h **************************************************
+
+	C compiler dependencies.
+
+>>>>>>> typedef char literal;    	to emphasize meaning only
+	You don't need to change this.
+#	{{Why are some unsigned char??}}
+# 	Why is it even here??????
+
+>>>>>>> typedef int expint;		What the 2nd arg of frexp points to.
+	On some 68K systems must be short (foo!).
+
+>>>>>>>	#define SETJMP			Can #include <setjmp.h>
+
+>>>>>>>	#define SIGNAL			Can #include <signal.h>
+
+>>>>>>>	#define SIGTYPE void		Type returned by signal handler
+					function (the second parameter
+					of signal())
+
+>>>>>>>	#define VOID (void)		Used in casts only, for quieter lint
+	Make it empty if your compiler doesn't have void.
+
+>>>>>>>	#define STRUCTASS		C compiler can do structure assignment
+
+>>>>>>>	#define strchr index    	Use index for strchr
+>>>>>>>	#define strrchr rindex  	Use rindex for strrchr
+
+******* File dir.c **************************************************
+
+	opendir, readdir, closedir
+
+	This file defines 3 functions for reading directories. There are
+	public-domain versions available for many machines already. If
+	you can't find one for your machine, then you'll have to write
+	one, but that isn't too hard a task. It's even easier for ABC,
+	since we guarantee never to open more than one directory at a
+	time. See bio/i4fil.c for the sole use of readdir.
+
+>>>>>>> DIR *opendir(filename) char *filename;
+	Open the directory named by filename, and return a pointer
+	that identifies the directory for use in subsequent readdirs
+	and closedirs. Since the ABC system never opens more than one
+	directory at a time, you can return a pointer to a static
+	area. Opendir should return NULL if the directory couldn't be
+	opened for any reason, or if some other error occurred.
+
+>>>>>>> struct direct *readdir(dirp) DIR *dirp;
+	Return a pointer to the next directory entry, or NULL if there
+	isn't a next entry. Only the d_name field of the entry, a
+	string giving the name of the file, is used by ABC.
+
+>>>>>>> closedir(dirp) DIR *dirp;
+	Close the directory.
+
+******* File dir.h **************************************************
+
+	This header file belongs with dir.c, so you have a lot of
+	freedom.  However, it must define:
+
+>>>>>>>	struct direct {
+		char d_name[<some value>];
+		<other fields>;
+	}
+
+>>>>>>>	typedef <whatever> DIR;
+
+	and the external declarations of opendir, readdir, and
+	closedir.
+
+******* File edit.c **************************************************
+
+	Users can choose to use a different editor than the standard
+	ABC editor for editing how-tos. You still get the ABC editor
+	for immediate commands. This file determines how such foreign
+	editors are invoked.
+
+>>>>>>> bool ed_file(editor, fname, line) char *editor, *fname; int line;
+	Invoke the alternative editor with filename 'editor' on file
+	'fname' and line number 'line'. Return Yes if the file has
+	been modified, otherwise return No. If there is no way to find
+	out, return Yes; this just costs more disk reads.
+
+	See file main.c for how to communicate to the rest of the
+	system that a different editor is to be used, and which one it
+	should be.
+
+******* File feat.h **************************************************
+
+	Features of the ABC system.
+	A few of these are there for historical reasons, and you don't need
+	to worry about them. The ones that you may need to change are:
+
+>>>>>>>	#define EXT_RANGE	extend range of approximate arithmetic
+	ABC approximate numbers are implemented with C doubles. If this
+	symbol is defined, the accuracy remains the same, but the
+	exponents are bigger, allowing larger approximate numbers (but
+	slower of course).
+
+>>>>>>> #undef CLEAR_MEM	remove internal adm. before editing
+
+	Defining this causes the system to free as much memory as
+	possible before it calls the editor. It also writes the
+	workspace administration file, perm.abc. This is mainly of use
+	on machines where main memory is at a premium.  The trade-off is
+	in disk accesses, which go up as a result (permanent locations,
+	and perm.abc have to be written out).  Unfortunately, machines
+	with little memory usually have slow disks too.
+
+>>>>>>>	#undef SAVE_PERM	write perm.abc after each edit
+
+	If SAVE_PERM is on, the ABC workspace internal administration
+	file (perm.abc) is written after each edit (see also CLEAR_MEM
+	above). Costs more disk writes (only perm.abc in this case); the
+	gain is more safety in the case of a crash.
+
+>>>>>>> #define MAXHIST 101		maximum length of undo history;
+					one more than the number of UNDO's
+					allowed
+		
+>>>>>>> typedef short reftype;		type used for reference counts
+>>>>>>> #define Maxrefcnt Maxintlet	Maxintlet is calculated in mach.h
+	Each abc value has a header that includes a reference count.
+	You can choose between an (unsigned if possible) char and a
+	short for the reference count.
+
+	The trade-off is as follows: if it is a char, then each value
+	uses less space, but if the reference count ever reaches the
+	value Maxrefcnt (i.e. the maximum positive value that can be
+	held in the reference count), the value will never be
+	released, so you could get a build-up of garbage (however, few
+	reference counts ever get that high).
+
+	If memory is not at a premium, use a short; if it is, consider
+	using a char. Maxrefcnt should be set accordingly to the
+	maximum positive value that a refcnt can hold.
+
+	To choose one of the three options, define one of
+	SHORTREFTYPE, CHARREFTYPE, or UCHARREFTYPE. Check that the
+	value of Maxrefcnt is suitable.
+
+	The following are the historical features and don't need to be changed.
+
+>>>>>>> #define SAVEBUF		Save Copy Buffer on file between edit sessions
+>>>>>>> #define USERSUGG	Give suggestions for user-defined commands
+>>>>>>> #define SAVEPOS		Save focus position between edit sessions
+>>>>>>> #define RECORDING	[record] and [playback] commands
+>>>>>>> #define SCROLLBAR	Show scroll bar if unit > screen
+>>>>>>> #define SHOWBUF		Shows contents of copy buffer if locked
+>>>>>>> #define HELPFUL		Print help blurb
+>>>>>>> #define GOTOCURSOR	enable [goto] operation
+>>>>>>> #define CK_WS_WRITABLE	give warning if workspace is read-only
+>>>>>>> #define TYPE_CHECK	do static type checking
+
+******* File file.c **************************************************
+
+	There are a number of standard directories and files that ABC
+	needs.  This file locates them.  For some of them you may have
+	to search in a number of places (for instance, on MS-DOS we
+	search for the messfile in the current directory, then in
+	\ABC, then in all directories in $PATH, and then in the root
+	directory).
+
+	The things that get searched for are:
+
+>>>>>>>	char * startdir;  	the directory that ABC was started up in
+>>>>>>>	char * bwsdefault; 	the workspaces parent directory
+>>>>>>>	char * messfile;  	the error-messages file
+>>>>>>>	char * keysfile;   	the keys definition file
+				(for the terminal being used for the session,
+				where this is relevant)
+>>>>>>>	char * helpfile;   	the ABC help file
+>>>>>>>	char * buffile;   	the file for storing the copy-buffer
+				between sessions
+
+>>>>>>>	char *makepath(path1, path2) char *path1, *path2;
+	Allocate store for a pathname consisting of the two elements
+	path1 and path2 joined together. Path1 is a directory name,
+	and path2 a filename.
+
+>>>>>>> initfile()
+	Set the full filenames of the above files.
+
+>>>>>>> int Chdir(dir) char *dir;
+	Change the working directory to directory 'dir',
+	which is an absolute pathname.
+
+******* File keys.c **************************************************
+
+	This file is used both by abc proper, and the program abckeys
+	which allows the user to change the bindings of keys to
+	operations.
+
+	The parts enclosed in #ifdef KEYS is only for abckeys.
+
+>>>>>>> struct tabent deftab
+	The table deftab defines the default key-bindings that are
+	keyboard independent. At run-time more entries are added from
+	the user's abckeys file, and possibly other sources (see
+	addspeckeys() below).
+
+	Each entry has five fields. You should only define the middle
+	three.  The third field is a string defining the default
+	key-binding, the second is an integer denoting the string
+	length of that binding and the fourth is a string with a
+	human-readable name for that string. If the binding contains
+	no NUL's, you can specify the length as 0, and the system
+	works out the length for itself.
+
+	For instance, suppose that the keyboard has a key marked HELP,
+	so that you can use that key for the default [help] binding,
+	and that pressing that key sends the string ESC [-1z.
+	Then the entry for Help would look like this:
+
+	{HELP,     0,     "\033[-1z",     "Help",     S_HELP},
+	      ----------------------------------
+
+	You may have several bindings for the same operation.
+
+	Raw key-strokes are converted into character strings by
+	function trminput in file trm.c (see below). If the keyboard
+	just sends characters, you need to do no more than read them
+	there, but if the keyboard sends integers for instance, you
+	have to convert them into character sequences, for instance an
+	escape followed by another character.
+	If a binding contains NUL characters, you must specify the
+	number of characters in the binding (since strlen won't work).
+	For instance, on MS-DOS the entry for Widen looks like this:
+
+	{WIDEN,     2,     "\0\073",      "F1",       S_WIDEN},
+		   ---      ------
+
+	When choosing default key-bindings, try to choose obvious
+	bindings where they exist (for instance use Help and Undo keys
+	if they exist on the keyboard), and try also to use the
+	defaults used by other abc implementations (e.g. backspace for
+	undo), so that people who regularly use more than one
+	implementation (one at home, another at work) don't have to
+	search for bindings. So if there is an UNDO key, use it and
+	backspace as well.
+
+>>>>>>> string reprchar(c) int c;
+	Used by abckeys to print readable representations of (control)
+	characters. The character has been produced by inkey().
+
+>>>>>>> char intrchar
+	The ABC system allows the user to rebind the [interrupt]
+	operation, but *only* if it is possible to look ahead in the
+	input queue (in other words if trmavail() in trm.c is
+	implemented; see CANLOOKAHEAD in os.h).
+
+	If it is not possible, then the system uses signals to
+	generate interrupts, and so checks that no binding contains
+	the keyboard interrupt character. In that case, this variable
+	must be set (in addspeckeys()) to the character that must be
+	checked for.
+
+>>>>>>> addspeckeys()
+	Adds entries to the keybindings table for entries that can't
+	be defined statically (for instance, on Unix the interrupt
+	binding is got from the terminal settings, and any arrow keys
+	and function keys from termcap).  If CANLOOKAHEAD is not
+	defined, intrchar must be set to the user's interrupt
+	character.
+
+	To add an entry to the table, call the function:
+
+		addkeydef(code, deflen, def, rep, name);
+
+	The five parameters are the same as the five fields of deftab
+	above. An error message is displayed to stderr, and the keydef
+	is not added, if the definition is unacceptable, for instance
+	if 'def' was empty, it started with a non-control character,
+	or (if CANLOOKAHEAD is defined) that it contains the user's
+	interrupt character as set in intrchar.
+
+******* File mach.h **************************************************
+
+	This file contains the machine constants and is the output
+	from the program mkmach.  Compile and run mkmach.c, check the
+	(self-explanatory) output, and put it in this file.
+
+	Amongst the numbers produced is the maximum double. A buggy
+	compiler might not be able to cope with this, and you may have
+	to fiddle with the value (for instance, dropping the last
+	digit of the fraction) until the compiler doesn't complain.
+
+******* File main.c **************************************************
+
+	This file is for starting up ABC: for reading arguments passed
+	to the program, and acting on them, and calling different
+	parts of the system accordingly. Try to keep your choice of
+	arguments compatible with other ABC implementations.
+
+	According to the arguments, you may set any of the following
+	global variables, which change the system's defaults:
+
+>>>>>>> char *OPTbwsdir = (char *) NULL;
+	If set, is the name of the parent directory of the workspaces
+	to use (currently the -g flag).
+
+>>>>>>> char *OPTworkspace = (char *) NULL;
+	If set, the name of the workspace to start in (-w).
+
+>>>>>>> char *OPTcentral = (char *) NULL;
+	If set, the name of the central workspace (-c).
+
+>>>>>>> char *OPTeditor = (char *) NULL;
+	Set this to the name of the editor if another editor than the
+	abc editor should be used to edit how-tos (indirect via -e flag).
+	This string is 	passed as the editor parameter to function ed_file
+	in edit.c (see above).
+
+>>>>>>> bool OPTunpack = No;
+	If set, the how-to's and locations from standard input or a
+	'file' argument will be unpacked in a workspace (-u).
+
+>>>>>>> bool OPTslowterminal = No;
+	If set to Yes, the editor is slightly less verbose (it doesn't
+	give "cannot insert" messages).
+
+>>>>>>> int abc_todo;
+	Set this to the task abc has to do. The possible values are in
+	bhdrs/port.h, and are:
+		abcProper - run ABC normally
+		abcioInput - run abc -i (input a table)
+		abcioOutput - run abc -o (output a table)
+		abcioList - run abc -l (list how-to's)
+		abcioWSrecover - run abc -r (recover a workspace)
+		abcioGRrecover - run abc -x (recover the workspace index)
+
+ 
+******* File main.h **************************************************
+
+	In this file you can put your external definitions of functions,
+	which are only used in this directory.
+
+******* File os.c **************************************************
+
+	This file is the place to put things which the ABC system
+	expects to be in the C library, aren't there, and need to be
+	put somewhere. The following is a list of the library
+	functions used by the Unix implementation, so you have an idea
+	of what to expect. Some of these are optional (like signal).
+	The ones enclosed in brackets are only used in some ports.
+
+	Maths routines:
+	atan, atan2, cos, exp, floor, frexp, ldexp, log, log10, sin, tan
+
+	Input/output:
+	fclose, fflush, fgets, fopen, fprintf, fputc, fputs, fscanf, read,
+	sprintf, sscanf, ungetc, write
+
+	Exiting:
+	abort, exit
+
+	Memory:
+	free, malloc, realloc
+
+	Strings:
+	atoi, index, rindex, strcat, strcmp, strcpy, strlen, strncmp, strncpy
+
+	Files/dirs:
+	chdir, closedir, fseek, ftell, mkdir,
+	opendir, readdir, rename, rewind, rmdir, (stat), unlink
+
+	Tty handling:
+	isatty
+
+	Signals:
+	(signal)
+
+	Termcap:
+	(tgetent), (tgetstr)
+
+	Various:
+	errno, (ftime), getenv, (localtime), (system)
+
+>>>>>>> int getseed()
+	Return a value used to initialise the random generator with a
+	random number.  For instance, return the time. The random
+	generator *must* start with a different value each time ABC is
+	run, so it's not enough to return a constant here!
+
+>>>>>>> getdatetime(year, month, day, hour, minute, sec, fraction, units)
+		int *year, *month, ......; long *fraction, *units;
+	How your system reads the date and time, where possible to
+	a fraction of a second.
+	'Units' returns the units that 'fraction' is expressed in. For
+	instance, if the timer returns fractions of a second in 1/60
+	of a second, then units would be 60; if the timer is a
+	millisecond timer, units would be 1000.
+
+>>>>>>> char *curdir()
+	Return the full path name of the current directory. You can
+	use a static buffer for this.
+
+>>>>>>> bool is_path(path) char *path;
+	Return Yes if the argument contains a directory separator
+	or a device indicator, or if it is some special directory
+	notation (such as ".", ".." for unix).
+
+>>>>>>> bool is_abspath(path) char *path;
+	Return Yes if the argument is an absolute path, rather than
+	relative to the current directory.
+
+>>>>>>> bool is_directory(path, name) char *path, *name;
+	Return Yes if 'name' is a true sub-directory of 'path' (so in
+	Unix terms, returns no for ("/user/fred/abc", ".") and
+	("/user/fred/abc", "..")). This is only used (in b4fil.c) when
+	trying to restore the workspace group index, when looking for
+	candidate abc workspaces: the parent directory is traversed
+	looking for directories that contain a perm.abc.
+
+
+******* File os.h **************************************************
+
+	Operating system features; header file to go with os.c. Much
+	of what is here is only used by os.c or other files in the
+	portability directory. Only the externally visible things are
+	marked with arrows.
+
+>>>>>>> #include <stdio.h>
+>>>>>>>	#include <math.h>	mathematical library
+>>>>>>>	#include <ctype.h>	character classifications
+>>>>>>>	#include <strings.h>	string operations, like strlen()
+
+>>>>>>>	#define Mkdir(path) (mkdir(path, DIRMODE))
+	#define DIRMODE 0777
+	How to make a directory.  Remove the 'mode' parameter, if your
+	system's mkdir() doesn't have one.
+
+	#include <sys/file.h>	for access(2) modes, like R_OK
+	only used for the macros F_readable etc., below.
+
+>>>>>>>	#define F_readable(f) 	(access(f, R_OK) == 0)
+	Determine whether file (not directory) f exists and is
+	readable; f can be a full pathname, or a filename.
+
+>>>>>>>	#define F_exists(f)	(access(f, F_OK) == 0)
+	Determine whether file (not directory) f exists; f can be a
+	full pathname, or just a filename.
+
+>>>>>>>	#define D_writable(f)	(access(f, W_OK) == 0)
+	Determine whether directory f is writable (path or filename).
+
+>>>>>>>	#define D_exists(f)	(access(f, F_OK) == 0)
+	Determine whether directory f exists (path or filename).
+
+>>>>>>> #define ENABLE_INTERRUPT()
+	Call system routine to enable interrupts.
+	On some systems, MSDOS for instance, it is necessary to call a system
+	routine to enforce the generation of interrupt signals. If your
+	system is similar, set this macro so that it calls that routine.
+	ENABLE_INTERRUPT is regularly called in pollinterrupt() [bed/e1getc.c].
+
+>>>>>>> #define CANLOOKAHEAD
+	Whether trmavail() (in trm.c) is implemented.
+
+	#define HAS_FTIME		ftime() and <sys/timeb.h> available
+	If not defined, you can use time() in getdatetime() [os.c].
+
+	#define HAS_MKDIR		mkdir() and rmdir() available
+	If not defined you have to write them [os.c].
+
+	#define HAS_RENAME		rename() available
+	If not defined you have to write it [os.c].
+
+	#define HAS_SELECT		4.2 BSD select() system call available
+	If defined you can use it to implement trmvail(), see unix/trm.c.
+
+	#define HAS_READDIR		dir. reading routines available
+	If not defined you have to write routines for opendir(),
+	readdir() and closedir() [dir.c]
+
+	#define HAS_GETWD		getwd() available
+	#define HAS_GETCWD		getcwd() available
+	If both are unavailable, you have to write one of them.
+	Used only in curdir() [os.c].
+
+
+	The following is only used by abckeys:
+
+>>>>>>>	#define KNOWN_KEYBOARD
+	If the keyboard is unknown (for instance on Unix, where
+	different keyboards are used), abckeys can't know that, for
+	instance, ESC [-1z has been produced by the HELP key, and so
+	prompts the user for a name. On known keyboards (like MS DOS
+	machines or the Atari ST) abckeys knows which keys send what,
+	and so doesn't need to ask.
+
+******* File sig.c **************************************************
+
+	This file is for signal handling. Different machines differ widely
+	here, and the consequences are subtle.
+
+	Normally, abc is used interactively, and interrupt signals are
+	switched off (see trm.c). However, when abc is run
+	non-interactively, the system must catch interrupt signals that
+	come in.  (Actually, even when running interactively, there is a
+	possibility of getting interrupt signals on some systems).
+
+	If your system can generate interrupt signals, you have to
+	write a signal handler to catch them. The handler must set the
+	flag 'intrptd' to Yes, and return (on some systems the signal
+	handler must be reinstated too). ABC periodically polls the
+	flag to see if an interrupt has occurred.
+
+>>>>>>>	initsig()
+	Set up signal handlers for any signals that may get generated.
+
+******* File trm.c **************************************************
+
+	This file defines a machine-independent interface to a 'virtual'
+	terminal for input and output. A current restriction that will
+	only be solved in later versions is that window resize is not
+	handled.
+
+	It is only used for writing to the screen (and is not used for
+	instance in non-interactive calls of ABC). Therefore, you
+	should ensure that output is sent to the screen and not just
+	to stdout regardless, which may have been redirected. For
+	instance, on Unix you could write to /dev/tty, on a PC you
+	could use direct calls to write to the screen.
+
+	The module consists of an upper level that you hopefully won't
+	have to change, and a machine-dependent lower level where all
+	functions begin with low_ . These are the routines you need to
+	implement.
+
+	The version in this directory is a simple version to get you
+	going, based on a VT100 terminal. If your terminal is a fast
+	one, then it will probably be sufficient, but if you will be
+	working over slow lines, you may have to consider doing some
+	optimisations. See the Unix version that does this.
+
+	If your machine only has one sort of 'terminal' (such as an
+	MS-DOS machine), then your work is simplified, but do not make
+	any assumptions about the number of lines and columns: someone
+	eventually will have a different-sized screen, and then won't be
+	able to use ABC. Try if possible to determine the size of the
+	screen automatically: the ABC philosophy is to do it right, and
+	not bother the user with having to explicitely give this sort of
+	details. (See low_get_screen_env() in this file for one way to
+	do it.)
+
+	If your machine has several different interfaces, then there may
+	be a termcap implementation for your machine, in which case you
+	can just use the Unix version of vterm, which uses termcap.
+
+	WHAT TO DO IF YOUR MOUSE CLICKS
+	Mouse-click style cursor moves are done by the [mouse] operation
+	in the editor, which must be bound to some character sequence.
+	Therefore a mouse-click must be converted to some suitable
+	character or character-sequence that can be bound to [mouse].
+
+	If ABC gets a [mouse] operation, it then calls trmsense (see
+	below) to find out where the click occurred, passing to it the
+	strings contained in the bindings for [mouse-sense] and
+	[mouse-format]. This is to allow two possible modes of
+	operations: 1) that a mouse click sends a sequence of
+	characters that includes the position information, and 2) that
+	a mouse click sends a fixed sequence, and the terminal then
+	has to be asked where the click occurred.
+
+	For 1) [mouse] must be bound to the initial sequence
+	that the mouse click sends, [mouse-sense] should be empty, and
+	[mouse-format] should describe the rest of the sequence.
+
+	For 2) [mouse] should be set to the fixed sequence the mouse
+	click sends, [mouse-sense] to the string that should be sent
+	to the terminal to ask for the click position, and
+	[mouse-format] to the format that describes the reply.
+
+	If your mouse doesn't send character sequences, but must be
+	handled in some other way, you should convert the clicks into
+	a character sequence, by polling in trminput and trmavail.
+
+	MOUSE CLICK FORMATS
+	A format that describes the mouse click sequences, has the
+	following possibilities (based on the cursor-setting format of
+	termcap):
+
+	All characters in the string must literally match the
+	corresponding character in the reply, except a % followed by
+	other characters, which have the following meaning:
+
+	%% - matches a % in the reply
+	%. - matches any character in the input
+	%d - matches a number in the reply
+	%2 - matches a 2 digit number in the reply
+	%3 - matches a 3 digit number in the reply
+	%+c - (for some character c) matches a character in the reply,
+	      which is treated as a number, from which the value of c
+	      is subtracted.
+	%-c - Similarly, but c is added.
+
+	The following two do not match anything in the input, but
+	affect the way numbers are interpreted:
+	%i - Causes the next number matched by %d, %2, and %3 (as well
+	     as %+ and %-) to be decremented by 1 (for terminals that
+	     number rows and columns from 1 rather than 0).
+	%r - Numbers matched in the input are assigned alternately to
+	     the y coordinate, and then to the x coordinate, and so
+	     on, starting with the y coordinate. If %r occurs in the
+	     format, one step in this sequence is skipped (so, if the
+	     next number would have been assigned to x, after a %r it
+	     will be assigned to y).
+
+	Examples:
+
+	An xterm window sends a mouse click as "ESC [ M c x y" where c
+	is a single character <space>, ! or ", depending on which
+	button is pressed, and x and y are single graphic characters
+	starting at "!". So, [mouse] can be bound to "ESC [ M" and the
+	format would be "%.%r%+!%+!". Another possibility is to bind
+	[mouse] to "ESC [ M <space>", "ESC [ M !", and "ESC [ M <">",
+	and set the format to "%r%+!%+!". (To get xterm to send mouse
+	clicks, you have to initially send the string "ESC [ ? 9 h"
+	which you should put in your [term-init] binding.)
+
+	A uw window sends a mouse click as a mouse-down sequence and a
+	mouse-up sequence, of the style "ESC m y x 0 ESC m y x @",
+	where x and y are single characters of the same style as
+	xterm. So you can bind [mouse] to "ESC m", and the format to
+	"%+!%+!0\033m%+!%+!@", or "%+!%+!%." (in the second case,
+	[mouse] gets called twice in quick succession).
+
+	By the way: for simple cases, the program abckeys is smart
+	enough to work out the mouse format for itself.
+
+	INTERRUPT HANDLING:
+
+	Whenever the system is in a state where it's not looking at
+	input (i.e. when it is computing), it periodically calls
+	pollinterrupt() in bed/e1getc.c, which looks ahead in the
+	input queue, via trmavail() and trminput(), to see if an
+	[interrupt] has been typed. (If it has, it discards all input
+	before that point and calls the interrupt handler,
+	int_signal() in bint3/i3err.c. If no [interrupt] has been
+	typed, no input is discarded.)
+
+	If you can't look ahead, and so can't implement trmavail(), you
+	then have to enable keyboard interrupts in low_setraw(), write
+	an interrupt handler which sets a flag, and test that flag in
+	trmavail() and trminput() [see the code in trm.c guided by
+	CATCHINTR].
+
+	If your system can't look ahead and doesn't generate signals,
+	computations are uninterruptable. This is of course extremely
+	undesirable, but presumably such systems don't exist.
+
+	DESCRIPTION OF VTRM:
+	For completeness, here is a description of what each routine
+	does. In most cases, the high-level version first updates its
+	internal administration, and then calls a low-level version.
+
+	The lines and columns of the virtual terminal are numbered 
+	  y = {0...lines-1} from top to bottom, and
+	  x = {0...cols-1} from left to right,
+	respectively.
+
+	The Visible Procedures in this package are:
+
+>>>>>>> trmstart(&lines, &cols, &flags)
+	Obligatory initialization call (sets tty modes etc.),
+	Returns the height and width of the screen to the integers
+	whose addresses are passed as parameters, and a flag that
+	describes some capabilities (see trm.h).
+	Function return value: 0 if all went well, an error code if there
+	is any trouble.  No messages are printed for errors.
+
+>>>>>>> trmundefined()
+	States that the screen contents are no longer valid.
+	This is necessary for a hard redraw, for instance.
+
+>>>>>>> trmsense(sense, format, &y, &x)
+	Returns the cursor position through its parameters, for
+	instance after a mouse click. Parameter 'sense' is a string
+	that is sent to the terminal, if that is necessary or NULL if
+	not. Parameter 'format' is a string that defines the format of
+	the reply from the terminal. (See above under 'What to do if
+	your mouse clicks.)
+
+>>>>>>> trmputdata(yfirst, ylast, indent, data)
+	Fill lines {yfirst..ylast} with data, after skipping the initial
+	'indent' positions. It is assumed that these positions do
+	not contain anything dangerous (like standout cookies or
+	null characters).
+
+>>>>>>> trmscrollup(yfirst, ylast, by)
+	Shift lines {yfirst..ylast} up 'by' lines (down |by| if by < 0).
+
+>>>>>>> trmsync(y, x)
+	Output data to the terminal and set cursor position to (y, x).
+
+>>>>>>> trmbell()
+	Send a (possibly visible) bell immediately.
+
+>>>>>>> trmend()
+	Obligatory termination call (resets tty modes etc.).
+
+	You may call these as one or more cycles of:
+		+ trmstart
+		+    zero or more times any of the other routines
+		+ trmend
+	Trmend may be called even in the middle of trmstart; this is necessary
+	to make it possible to write an interrupt handler that resets the tty
+	state before exiting the program.
+
+	ROUTINES FOR CHARACTER INPUT
+
+>>>>>>> trminput()
+	Return the next input character (with its parity bit cleared
+	if any).  This value is a nonnegative int.  Returns -1 if the
+	input can't be read any more. 
+
+>>>>>>> trmavail()
+	Return 1 if there is an input character immediately available,
+	0 if not.  Return -1 if not implementable. 
+
+>>>>>>> trminterrupt() (Not used by this version of ABC)
+	Return 1 if an interrupt has occurred since the last call to
+	trminput or trmavail, 0 else. 
+
+>>>>>>> trmsuspend()
+	Suspend the program. If your system supports it (e.g. 4BSD with
+	job control enabled), you should use the system suspend
+	mechanism. On systems that don't have such a mechanism, you
+	should try to execute a shell, for instance using system().
+	Return 0 if the suspend worked, 1 if it didn't (e.g. not enough
+	memory), -1 if suspend isn't implemented.
+#	BUG: there is a timing window where keyboard-generated signals
+#	(such as interrupt) can reach the program.
+
+
+	The low-level routines are:
+
+>>>>>>> low_put_char(c)
+	Output a single character to the screen at the current y, x
+	position.
+
+>>>>>>> low_putstr(s)
+	Ditto a string.
+
+>>>>>>> low_printf(fmt, y, x)
+	You won't need to change this; it calls low_putstr itself.
+
+>>>>>>> int low_setraw()
+	Set the terminal so that characters are directly readable, and
+	not buffered.
+
+>>>>>>> int low_startmouse()
+	Initialise the mouse, should you have one, otherwise do nothing.
+
+>>>>>>> int low_trmstart()
+	Low-level initialisation of the terminal.
+
+>>>>>>> int low_get_screen_env(pheight, pwidth)
+	Get initial properties of the terminal, such as the number of
+	lines and columns.
+
+>>>>>>> low_endraw()
+	Set the terminal back into the state it was before
+	low_startraw was called.
+
+>>>>>>> low_endmouse()
+	The complement of low_startmouse.
+
+>>>>>>> low_trmend()
+	The complement of low_trmstart.
+
+>>>>>>> bool low_trmsense(py, px)
+	Sense the current cursor or mouse position (in vtrm
+	coordinates). See "What to do if your mouse clicks" above.	
+
+>>>>>>> low_trmscrollup(yfirst, ylast, by)
+	If hardware scrolling is possible (which is indicated in one
+	of the flags during trmstart), it is done here. If the flag is
+	not set, this function is not called.
+
+>>>>>>> low_trmbell()
+	Ring the bell.
+
+>>>>>>> low_trmsync()
+	Make sure everything that has been written has been sent to the
+	screen.
+
+>>>>>>> low_clr_to_eol()
+	Clear to end of line.
+
+>>>>>>> low_move(y, x)
+	Move cursor to position y, x (in vtrm coordinates)
+
+>>>>>>> low_standout()
+	Set standout mode on. All characters written by low_putstr and
+	low_put_char should be written in standout mode, until the
+	next call of low_standend.
+
+	You don't have to use standout mode, per se, but can use
+	underline if you want. There is a particular problem with
+	terminals that have a non-flashing block cursor, since very
+	often standout exactly cancels the cursor, and so it appears
+	that the first character of the ABC focus is then not in
+	standout mode. For such beasts you should either consider
+	changing the cursor shape (in low_trmstart) if that's possible,
+	for instance to an underline, or using underlining as standout
+	mode for the focus.
+
+>>>>>>> low_standend()
+	Set standout mode off.
+
+>>>>>>> low_home_and_clear()
+	Go to position (0, 0), and clear the screen.
+
+>>>>>>> int low_trminput()
+	Read one character/key from the input.
+
+>>>>>>> int low_trmavail()
+	Report if there are characters waiting to be read.
+
+>>>>>>> int low_trmsuspend()
+	Suspend abc, either using job control, if it's possible,
+	otherwise by calling a shell.
+
+******* File trm.h **************************************************
+
+	This file belongs with trm.c. You shouldn't need to change
+	anything in it.
+
+******* File usage.c **************************************************
+
+	In this file are the messages that will be printed if there is
+	something wrong when calling abc.
+
+>>>>>>> abc_usage()
+	Write the usage message.
+
+	The error message strings don't get used in the program, only
+	the number (see the definition of macro MESS in b.h).
+
+	The error messages themselves are collected by a program
+	('Collect' in directory 'scripts'), and stored in the abc.msg file,
+	which is then used at run-time to print the error messages out.
+	Each error message is given a number consisting of one or two
+	digits for the file, and two digits for the message number
+	within that file. The file abc.msg is then sorted numerically.
+	The error numbers are assigned by the program Change (also in
+	scripts), but you can always do it by hand.
+
+*****************************************************************************
+
+#REMARKS FOR THE ABC GROUP
+#
+#	Lambert sez:
+#	On some screens the cursor and highlighting are both
+#	presented by inversion, which means that in a multi-character
+#	focus the first character seems to be missing.
+#	There should be some fix for this.

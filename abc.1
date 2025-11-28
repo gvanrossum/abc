@@ -1,0 +1,1103 @@
+.if t \{\
+.\" replace this with some constant width font (for ABC characters):
+.ds <: \\fC
+.\" we filled in \\fC (Courier) for Postscript printers;
+.\" use \\f(CW on Versatec;
+.\" use \\f(lp on Harris typesetter.
+.ds :> \\fP
+.ds [ [\\s-2
+.ds ] \\s+2]
+.ds _ \\v'+0u'\(ru\\v'-0u'\|
+.ds * \\v'+18u'\s+2*\s0\\v'-18u'\"lower and larger
+.ds dg \\(dg
+.ds <= \\(<=
+.ds Q \&`
+.ds U \&'
+.nr io 14 \"indent offset for options description
+.ds uA \\(ua
+.ds dA \\(da
+.ds .5 .5v
+.ds .3 .3v\}
+.if n \{\
+.ds <: \\fR
+.ds :> \\fP
+.ds [ [
+.ds ] ]
+.ds _ _
+.ds * *
+.ds dg *
+.ds <= <=
+.ds Q \&'
+.ds U \&'
+.nr io 16 \"indent offset for options description
+.ds uA ^
+.ds dA v
+.ds .5 1v
+.ds .3 1v\}
+.TH ABC 1 local
+.tr **
+.SH NAME
+abc \-
+ABC interpreter & environment
+.br
+abckeys \-
+change key bindings for \*Qabc\*U
+.SH SYNOPSIS
+\f3abc\fP [ \f3\-g\fP dir ] [ \f3\-w\fP name ] [ \f3\-c\fP name ] [ \f3\-e\fP] [ file ... ]
+.br
+\f3abc\fP [ \f3\-g\fP dir ] [ \f3\-w\fP name ] \f3\-i\fP tab | \f3\-o\fP tab
+.br
+\f3abc\fP [ \f3\-g\fP dir ] [ \f3\-w\fP name ] \f3\-l\fP | \f3\-p\fP | \f3\-u\fP [file ... ] 
+.br
+\f3abc\fP [ \f3\-g\fP dir ] [ \f3\-w\fP name ] \f3\-r\fP | \f3\-x\fP
+.br
+.B "abckeys"
+.SH DESCRIPTION
+Without options or files, the ABC interpreter is started, using the
+ABC editor, in the last workspace used or in workspace \*Q\fIfirst\fP\*U
+if this is your first abc session.
+A workspace is kept as a group of files in a directory,
+with separate files for each how-to and location.
+The workspace directories themselves are kept by default in the
+directory $HOME/abc.
+On non-Unix machines, $HOME is the disk you are working on.
+.PP
+Workspace Options:
+.RS 0.5c
+.TP \n(io
+.BR "\-g" " dir"
+use group of workspaces in \*Qdir\*U instead of $HOME/abc.
+.TP
+.BR "\-w" " name"
+start in workspace \*Qname\*U instead of last workspace used.
+.TP
+.BR "\-w" " path"
+use \*Qpath\*U as workspace (no -g option allowed).
+.TP
+.BR "-c" " name"
+use \*Qname\*U as central workspace (default: $HOME/abc/abc).
+.TP
+.BR "-c" " path"
+use \*Qpath\*U as central workspace.
+.RE
+.PP
+Run options:
+.RS 0.5c
+.TP \n(io
+.B "\-e"
+Use $EDITOR as editor to edit definitions, instead of ABC editor.
+.TP \n(io
+.B "file" "..."
+Read commands from file(s) instead of from standard input;
+input for \*(<:READ\*(:> commands is taken from standard input.
+If a file is called \*Q-\*U and standard input is the keyboard,
+the ABC system is started up interactively for that entry.
+.RE
+.PP
+Special tasks - table handling:
+.RS 0.5c
+.TP \n(io
+.BR "\-i" " tab"
+Fill table \*Qtab\*U with text lines from standard input.
+.TP
+.BR "\-o" " tab"
+Write text lines from table \*Qtab\*U to standard output.
+.RE
+.PP
+Special tasks - workspace handling:
+.RS 0.5c
+.TP \n(io
+.B "\-l"
+List the how-to's in workspace to standard output.
+.TP
+.B "\-p"
+Pack how-to's and locations from a workspace to standard output.
+.TP
+.BR "\-u" " [ file ... ]"
+Unpack how-to's and locations from file(s) or standard input
+in workspace.
+.RE
+.PP
+Special tasks - recovering:
+.RS 0.5c
+.TP \n(io
+.B "\-r"
+Recover a workspace when its index is lost: useful after a machine
+crash if the ABC internal administration files didn't get written out.
+.TP
+.B "\-x"
+Recover the index of a group of workspaces.
+.RE
+.SH USAGE
+(This is necessarily a very brief description; see \*QThe ABC
+Programmer's Handbook\*U for full details.)
+.sp \*(.3
+Use \*Q\*(<:QUIT\*(:>\*U to finish an ABC session.
+.sp \*(.3
+When ABC starts up interactively, it displays a prompt and awaits
+input.
+.sp \*(.3
+TYPING AND SUGGESTIONS:
+as you type, the system tries to suggest a possible continuation for
+what you have typed;
+to accept the suggestion, press [accept] (by default this is bound to
+the \*[TAB\*] key;
+type \*Q\*(<:?\*(:>\*U to find out the bindings for the keyboard you
+are using).
+If you don't want to accept the suggestion, just carry on typing (you
+can always type character for character, ignoring the suggestions).
+Usually the system knows where a letter must be capital and where not,
+and you usually don't have to use the shift key; however, in the few
+places where both a lower-case and an upper-case letter would be
+legal (for instance for \*(<:AND\*(:>), you have to type the letter upper-case.
+.sp \*(.3
+When you type a control command, like \*(<:WHILE\*(:>, the system provides
+indentation automatically for the body of the command; to reduce the
+indentation one level, type [return].
+.sp \*(.3
+CORRECTING AND EDITING:
+the [undo] key (by default bound to backspace) undoes the last key you
+typed.
+Repeatedly typing it undoes more and more, up to a certain maximum
+number of key-presses.
+.sp \*(.3
+To correct other parts, you must put the \*Qfocus\*U onto the part you
+want to change.
+The focus is displayed by underlining or reverse video.
+[Widen] and [extend] make the focus larger,
+[first] and [last] make it smaller.
+.sp \*(.3
+[Delete] deletes the contents of the focus.
+.sp \*(.3
+[Copy] copies the contents of the focus to a buffer, or if the focus
+is not focussed on anything, copies the contents of the buffer back to
+where you are positioned.
+.sp \*(.3
+MOVING THE FOCUS:
+[Upline] and [downline] focus on one line above or below.
+[Previous] and [next] move the focus left and right.
+[Up], [down], [left], and [right] move an empty focus around.
+[Goto] widens the focus to the largest thing at the current cursor position.
+[Mouse] moves the focus to the largest thing at the position of a mouse-click.
+.sp \*(.3
+OTHER OPERATIONS:
+[Look] redraws the screen; [record] records all keystrokes until the
+next time you press [record] \(em [play] replays them.
+[Redo] redoes the last key(s) undone; [interrupt] interrupts a running
+command.
+.sp \*(.3
+WORKSPACES:
+To create a new workspace, or go to an existing workspace, type
+\*Q\*(<:>name\*(:>\*U.
+To go to the last workspace you were in, type a single \*Q\*(<:>\*(:>\*U.
+To get a list of workspace names, type \*Q\*(<:>>\*(:>\*U.
+.sp \*(.3
+How-to's in the central workspace can be invoked in any other workspace.
+Shared locations used in central how-to's access locations in the
+current workspace, however.
+The default central workspace is $HOME/abc/abc;
+it can be changed with the \*Q\fB-c\fP name\*U option.
+To edit how-to's in the central workspace, you must go to it.
+.sp \*(.3
+HOW-TO's:
+To create a new how-to, just type the first line of the how-to.
+This creates the new how-to, and allows you to type the body.
+Use [exit] to finish it (by default \*[ESC\*]\*[ESC\*]).
+.sp \*(.3
+To visit a how-to, type a colon, followed by the name of the how-to.
+Again, use [exit] to exit.
+To visit the last how-to again, or the last how-to you got an error
+message for, type a single \*Q\*(<::\*(:>\*U.
+To get a list of the how-to's in this workspace, type \*Q\*(<:::\*(:>\*U.
+.sp \*(.3
+To edit a location, type a \*Q\*(<:=\*(:>\*U followed by the name of the location.
+To re-edit it, type a single \*Q\*(<:=\*(:>\*U.
+To get a list of the locations in the workspace, type \*Q\*(<:=\|=\*(:>\*U.
+.SH KEY BINDINGS
+The binding of editing operations like [accept] to keys
+may be different for your keyboard;
+type a \*Q\*(<:?\*(:>\*U at the prompt to find out what the bindings are
+for your keyboard.
+.br
+To redefine the keys used for editor operations, run \*Qabckeys\*U.
+This produces a private key definitions file.
+You will be given instructions on how to use it.
+.br
+Keys labeled
+.I f1...f8
+are
+.I "function keys."
+On Unix, the way to type these is terminal-dependent.
+The codes they send must be defined by the termcap entry for your terminal.
+.br
+If a terminal has arrow keys 
+.if t \*(uA, \(<-, \(->, \*(dA
+which transmit codes to the computer,
+these are used for Up, Down, Left and Right.
+Again, the termcap entry must define the codes.
+See
+.IR termcap (5).
+.SH MOUSE AND GOTO
+The [mouse] operation can be used to move the focus using your mouse.
+For simple cases, the program \*Qabckeys\*U is smart
+enough to work out the behaviour of your mouse, and add suitable
+definitions to your key definitions file.
+If it fails you must add some extra definitions yourself:
+apart from [mouse] you should define [mouse-format] and possibly
+[mouse-sense] in your key definitions file, according to which of the
+following schemes applies:
+1) a mouse-click sends a sequence of characters that includes the
+position information, or
+2) a mouse-click sends a fixed sequence, and the terminal must then be
+asked where the click occurred.
+.br
+For 1) [mouse] must be bound to the initial sequence
+that the mouse click sends, [mouse-sense] should be empty, and
+[mouse-format] should describe the rest of the sequence.
+.br
+For 2) [mouse] should be set to the fixed sequence the mouse
+click sends, [mouse-sense] to the string that should be sent
+to the terminal to ask for the click position, and
+[mouse-format] to the format that describes the reply.
+.sp \*(.3
+The [goto] operation is of most use if the cursor can be moved
+locally at the terminal, and the terminal can then be sensed for the
+cursor position.
+You must define two extra operations for this in your key definitions file:
+[cursor-sense] which gives the string that must be sent to the terminal to
+sense the cursor position,
+and [cursor-format] which should define the format of the reply.
+.sp \*(.3
+MOUSE CLICK AND CURSOR SENSE FORMATS
+.br
+A format that describes the mouse click or cursor reply sequences, has the
+following possibilities (based on the cursor-addressing format of
+termcap(5)):
+.br
+All characters in the string literally match the
+corresponding character in the reply, except a % followed by
+other characters, which have the following meaning:
+.PD 0v
+.RS
+.IP %%
+matches a %
+.IP %.
+matches any character
+.IP %d
+matches a number
+.IP %2
+matches a 2 digit number
+.IP %3
+matches a 3 digit number
+.IP %+c
+(for some character c) matches a character, which is treated as
+a number, from which the value of c is subtracted.
+.IP %-c
+Similarly, but c is added.
+.RE
+The following two do not match anything in the input, but
+affect the way numbers are interpreted:
+.RS
+.IP %i
+Causes the next number matched by %d, %2, and %3 (as well as %+
+and %-) to be decremented by 1 (for terminals that number rows
+and columns from 1 rather than 0).
+.IP %r
+Numbers matched in the input are assigned alternately to the y
+coordinate, and then to the x coordinate, and so on, starting
+with the y coordinate. If %r occurs in the format, one step in
+this sequence is skipped (so, if the next number would have been
+assigned to x, after a %r it will be assigned to y).
+.RE
+.PD
+.sp \*(.3
+KEY DEFINITION FORMAT
+.br
+A key definition should be on one line in the key definitions file
+as follows:
+.RS
+.nf
+\*(<:[operation-name] = "definition-string" = "representation-string"\*(:>
+.fi
+.RE
+The operation-name can be any regular operation, or one of
+[mouse-sense], [mouse-format], [cursor-sense] and [cursor-format].
+The definition string can use \*Q\ee\*U or \*Q\eE\*U for the ESC
+character, or the normal escape sequence in C strings for control
+characters (like \*Q\e015\*U for the RETURN or CR character).
+The representation string must be a string of printable characters for use in
+the help summary.
+.sp \*(.3
+EXAMPLES
+.br
+An xterm window sends a mouse click as \*QESC\ [\ M\ c\ x\ y\*U where c
+is a single character <space>, ! or ", depending on which
+button is pressed, and x and y are single graphic characters
+starting at \*Q!\*U. So, [mouse] can be bound to \*QESC\ [\ M\*U and the
+format would be \*Q%.%r%+!%+!\*U, e.g.:
+.RS
+.nf
+\*(<:[mouse] = "\ee[M" = "mouse-click"
+[mouse-format] = "%.%r%+!%+!" = ""\*(:>
+.fi
+.RE
+The representation string for the mouse-format can remain empty since
+it won't be displayed in the help summary.
+.br
+Another possibility is to bind
+[mouse] to \*(<:"\ee[M "\*(:>, \*(<:"\ee[M!"\*(:>,
+and \*(<:"\ee[M\e""\*(:>,
+and set the format to \*(<:"%r%+!%+!"\*(:>.
+.br
+(To get xterm to send mouse
+clicks, you have to initially send the string \*QESC\ [\ ?\ 9\ h\*U
+which you should put in your [term-init] binding as \*(<:"\ee[?9h"\*(:>.)
+.sp \*(.3
+A uw window sends a mouse click as a mouse-down sequence and a
+mouse-up sequence, of the style \*QESC\ m\ y\ x\ 0\ ESC\ m\ y\ x\ @\*U,
+where x and y are single characters of the same style as
+xterm. So you can bind [mouse] to \*(<:"\eem"\*(:>, and the format to
+\&\*(<:"%+!%+!0\eem%+!%+!@"\*(:>, or \*(<:"%+!%+!%."\*(:> (in the second case,
+[mouse] gets called twice in quick succession).
+.sp \*(.3v
+On a Hewlett Packard 2640b, the terminal can be asked
+for the current cursor position with the string \*QESC\ \(ga\ DC1\*U;
+it returns the position in the
+format \*QESC\ &\ a\ x\ c\ y\ Y\ CR\*U,
+where x and y are numbers.
+Therefore you should add to your key definitions file:
+.RS
+.nf
+\*(<:[cursor-sense] = "\ee`\e021" = ""
+[cursor-format] = "\ee&a%r%dc%dY\e015" = ""\*(:>
+.fi
+.RE
+.SH FILES
+.ta 5c
+.if n .ta 25
+.nf
+\&$HOME/copybuf.abc	copy buffer between sessions
+\&$HOME/abc/wsgroup.abc	table mapping workspace names to directory names
+\&$HOME/abc/abc$TERM.key	private key definitions file (Unix only)
+\&$HOME/abc/abc.key	private key definitions file (non-Unix)
+\&position.abc	focus position of edited how-to's in workspace
+\&perm.abc	table mapping object names to file names
+\&suggest.abc	suggestion list for user-defined commands
+\&types.abc	table with codes for type-checking between how-to's
+\&\**.cmd	command how-to's in this workspace
+\&\**.zfd, \&\**.mfd, \&\**.dfd	function how-to's in this workspace
+\&\**.zpd, \&\**.mpd, \&\**.dpd	predicate how-to's in this workspace
+\&\**.cts	permanent locations in this workspace
+abc.msg	messages file, used for errors (not on Macintosh)
+abc.hlp	helpfile with this text (MacABC.help on Macintosh)
+.fi
+.sp \*(.3
+The latter two are searched for first in your startup directory,
+then in $HOME/abc, and finally, on Unix,
+in a directory determined by the installer of ABC.
+On the IBM PC and Atari ST the directories in your $PATH are used
+in the last stage
+(if you have a hard disk place these files
+in the workspaces directory \*(<:abc\*(:>).
+.SH ATARI ST IMPLEMENTATION
+There are four files supplied: the program \*(<:abc.tos\*(:> itself,
+\&\*(<:abckeys.tos\*(:> for changing your key bindings,
+the help file \&\*(<:abc.hlp\*(:>,
+and the error messages file \*(<:abc.msg\*(:>.
+(See FILES above.)
+.br
+If you start ABC up from the desktop, and you want to use the options given
+above, like \*(<:-w\*(:>,
+you should rename \*(<:abc.tos\*(:> to \*(<:abc.ttp\*(:>.
+There is an additional facility for redirecting input and output:
+the parameter \*(<:>outfile\*(:> redirects all output from ABC to the file
+called \*(<:outfile\*(:>,
+and similarly \*(<:<infile\*(:> takes its input from the file called \*(<:infile\*(:>.
+.SH IBM PC IMPLEMENTATION
+There are four files for running ABC, the program \*(<:abc.exe\*(:> itself,
+\&\*(<:abckeys.exe\*(:> for changing your key bindings,
+the help file \*(<:abc.hlp\*(:>,
+and the error messages file \*(<:abc.msg\*(:>.
+(See FILES above.)
+.br
+If your screen size is non-standard, or your machine is not 100% BIOS
+compatible (which is unusual these days), you can specify the screen-size,
+and whether to use the BIOS or ANSI.SYS for output, by typing after
+the \*(<:A>\*(:> prompt, before you start ABC up, one of the following:
+.RS
+.nf
+\&\*(<:SET SCREEN=ANSI \*(:>\fIlines cols\fP
+\&\*(<:SET SCREEN=BIOS \*(:>\fIlines cols\fP
+.fi
+.RE
+If you are going to use \*(<:ANSI.SYS\*(:>,
+be sure you have the line
+.RS
+\&\*(<:DEVICE=ANSI.SYS\*(:>
+.RE
+in your \*(<:CONFIG.SYS\*(:> file.
+Consult the DOS manual for further details.
+.SH APPLE MACINTOSH IMPLEMENTATION
+There are three files supplied: \*(<:MacABC\*(:>, the application itself,
+\&\*(<:MacABC.help\*(:>, the help file,
+and \*(<:MacABC.doc\*(:>, a MacWrite document containing a variant
+of this text.
+The help file should be in the same folder as MacABC,
+or in your System Folder.
+.br
+MacABC runs in a single window.
+You'll notice that most operations are menu entries,
+as well as being possible from the keyboard.
+You can start ABC up by double-clicking the MacABC icon
+in which case you start up in the last workspace used,
+or by double-clicking on any icon in a workspace,
+in which case you start in that workspace.
+In this latter case, if the filename of the icon you clicked on
+ends in \*(<:.cmd\*(:>, that how-to is executed,
+but the how-to may not have any parameters.
+.br
+Instead of the special option flags mentioned above, most of the tasks,
+like recovering a workspace, can be done from the File menu.
+.br
+.ps 8
+.vs 10p
+\*(dg Notes for Macintosh guru's:
+.br
+The messages are \*(<:STR#\*(:> resources in MacABC; you must use a
+resource editor to change them.
+.br
+MacABC uses \*(<:Monaco 9\*(:> for the screen, and \*(<:Courier 10\*(:>
+for printing.
+You can change them with ResEdit,
+by editing the resource with type \*(<:Conf\*(:>
+and ID \*(<:0\*(:>.
+The horizontal and vertical window-size and the window-title can
+also be adapted there.
+To facilitate this,
+first Paste the \*(<:TMPL\*(:> resource with ID \*(<:5189\*(:>
+named \*(<:Conf\*(:> from MacABC to (a copy of) ResEdit.
+But beware, MacABC only works properly with Fixed-width Fonts like
+\&\*(<:Monaco\*(:> and \*(<:Courier\*(:>.
+.ps
+.vs
+.SH SEE ALSO
+.in +.5i
+.ti -.5i
+Leo Geurts, Lambert Meertens and Steven Pemberton,
+.I "The ABC Programmer's Handbook,"
+Prentice-Hall, Englewood Cliffs, New Jersey, 1990,
+ISBN\ 0-13-000027-2.
+.ti -.5i
+Steven Pemberton,
+.I "An Alternative Simple Language and Environment for PCs,"
+IEEE Software, Vol. 4, No. 1, January 1987, pp. 56-64.
+.ti -.5i
+.I "The ABC Newsletter."
+Available free from CWI.
+.ti -.5i
+ABC electronic mailing list:
+send your e-mail address to \*(<:abc-list-request@cwi.nl\*(:>.
+.SH AUTHORS
+Eddy Boeve,
+Frank van Dijk,
+Leo Geurts,
+Timo Krijnen,
+Lambert Meertens,
+Steven Pemberton,
+Guido van Rossum.
+.SH ADDRESS
+ABC Distribution,
+CWI/AA,
+Postbox 4079,
+1009 AB Amsterdam,
+The Netherlands.
+.br
+E-mail: \*Qabc@cwi.nl\*U.
+.fl
+.if t .ne 53v
+.SH SUMMARY OF SPECIAL ACTIONS
+.rs
+.ta 2.5c
+.if n .ta 8
+.nf
+.sp
+\*(<::\*(:>\fIname\fP	Visit how-to called \*Qname\*U
+\*(<::\*(:>	Visit last how-to referred to
+\*(<:::\*(:>	Display headings of how-to's in this workspace
+.sp \*(.3
+\*(<:=\*(:>\fIname\fP	Visit contents of location
+\*(<:=\*(:>	Visit last location visited
+\*(<:==\*(:>	Display names of permanent locations in this workspace
+.sp \*(.3
+\*(<:>\*(:>\fIname\fP	Visit workspace \*Qname\*U
+\*(<:>\*(:>	Visit last workspace visited
+\*(<:>>\*(:>	Display list of workspace names
+.sp \*(.3
+\*(<:QUIT\*(:>	Leave ABC
+.fi
+.ne 5v
+.SH SUMMARY OF EDITING OPERATIONS
+.rs
+.ta 2.5c 5.5c
+.if n .ta 10 27
+.nf
+.sp
+Name	Default Keys\*(dg	Short description
+.sp \*(.3
+Accept	\*[TAB\*]	Accept suggestion, focus to hole or end of line
+Return	\*[RETURN\*]	Add line or decrease indentation
+.sp \*(.3
+Widen	\fIf1\fP, \*[ESC\*] w	Widen focus
+Extend	\fIf2\fP, \*[ESC\*] e	Extend focus (usually to the right)
+First	\fIf3\fP, \*[ESC\*] f	Move focus to first contained item
+Last	\fIf4\fP, \*[ESC\*] l	Move focus to last contained item
+.sp \*(.3
+Previous	\fIf5\fP, \*[ESC\*] p	Move focus to previous item
+Next	\fIf6\fP, \*[ESC\*] n	Move focus to next item
+Upline	\fIf7\fP, \*[ESC\*] u	Move focus to whole line above
+Downline	\fIf8\fP, \*[ESC\*] d	Move focus to whole line below
+.sp \*(.3
+Up	\*(uA, \*[ESC\*] U	Make new hole, move up
+Down	\*(dA, \*[ESC\*] D	Make new hole, move down
+Left	\(<-, \*[ESC\*] ,	Make new hole, move left
+Right	\(->, \*[ESC\*] .	Make new hole, move right
+.sp \*(.3
+Goto	\*[ctrl-G\*]  	New focus at cursor position
+Mouse	\fImouse-click\fP  	New focus at position of mouse-click
+.sp \*(.3
+Undo	\*[BACKSPACE\*]	Undo effect of last key pressed (may be repeated)
+Redo	\*[ctrl-U\*]	Redo last UNDOne key (may be repeated)
+.sp \*(.3
+Copy	\fIf9\fP, \*[ctrl-C\*], \*[ESC\*]c  	Copy buffer to hole, or focus to buffer
+Delete	\*[ctrl-D\*]	Delete contents of focus (to buffer if empty)
+.sp \*(.3
+Record	\*[ctrl-R\*]	Start/stop recording keystrokes
+Play	\*[ctrl-P\*]	Play back recorded keystrokes
+.sp \*(.3
+Look	\*[ctrl-L\*]	Redisplay screen
+Help	\fIf10\fP, \*[ESC\*]?	Print summary of editing operations
+.sp \*(.3
+Exit	\*[ctrl-X\*]	Finish changes or execute command
+Interrupt (as set by \*Qstty\*U)	Interrupt command execution
+Suspend (as set by \*Qstty\*U)	Suspend ABC (only for shell with job control)
+.fi
+.sp
+\*(dg Notes:
+.sp \*(.3
+\*[Ctrl-D\*] means: hold the \*[CTRL\*] (or \*[CONTROL\*]) key down while pressing d.
+.br
+\&\*[ESC\*] w means: press the \*[ESC\*] key first, then w.
+.fl
+.if t .bp
+.SH ABC QUICK REFERENCE
+.PD 0v
+.nh
+.de Sh
+.fl
+.if t .ne 5
+.sp \*(.5
+.LP
+.if t .ft 3
+\&\\$1
+.if t .ft 1
+.sp \*(.5
+..
+.de Lp
+.sp \*(.3
+..
+.de LI
+.fl
+.if t .ft 2
+.if t .TP 36n
+.if n .TP 30n
+.if n .nr LL 81m
+..
+.de IS
+.if t .ft 1
+..
+.rs
+.Sh "COMMANDS"
+.LI
+\*(<:WRITE\*(:> expr
+.IS
+Write to screen;
+.if n .br
+\*(<:/\*(:> before or after \fIexpr\fP gives new line
+.LI
+\*(<:READ\*(:>\ address\ \*(<:EG\*(:>\ expr
+.IS
+Read expression from terminal to \fIaddress\fP;
+.if n .br
+\fIexpr\fP is example
+.LI
+\*(<:READ\*(:> address \*(<:RAW\*(:>
+.IS
+Read line of text
+.LI
+\*(<:PUT\*(:> expr \*(<:IN\*(:> address
+.IS
+Put value of \fIexpr\fP in \fIaddress\fP
+.LI
+\*(<:SET\ RANDOM\*(:>\ expr
+.IS
+Start random sequence for \*(<:random\*(:> and \*(<:choice\*(:>
+.LI
+\*(<:REMOVE\*(:> expr \*(<:FROM\*(:> list
+.IS
+Remove one element from \fIlist\fP
+.LI
+\*(<:INSERT\*(:> expr \*(<:IN\*(:> list
+.IS
+Insert in right place
+.LI
+\*(<:DELETE\*(:> address
+.IS
+Delete permanent location or table entry
+.LI
+\*(<:PASS\*(:>
+.IS
+Do nothing
+.LI
+\*(<:\fIKEYWORD\fR\*(:>\ expr \*(<:\fIKEYWORD\fR\*(:>\ .\^.\^.
+.IS
+Execute user-defined command
+.LI
+\*(<:\fIKEYWORD\fR\*(:>
+.IS
+Execute refined command
+.Lp
+.LI
+\*(<:CHECK\*(:> test
+.IS
+Check \fItest\fP and stop if it fails
+.LI
+\*(<:IF\*(:> test\*(<::\*(:>
+.IS
+If \fItest\fP succeeds, execute \fIcommands\fP;
+.LI
+\*(<:   \*(:>commands
+.IS
+    no \*(<:ELSE\*(:> allowed
+.fl
+.ne 4
+.LI
+\*(<:SELECT:\*(:>
+.IS
+Select one alternative:
+.LI
+\*(<:    \*(:>test\*(<::\*(:> commands
+.IS
+     try each \fItest\fP in order
+.LI
+\*(<:    \*(:>.\^.\^.
+.IS
+     (one must succeed;
+.LI
+\*(<:    \*(:>test\*(<::\*(:> commands
+.IS
+     the last \fItest\fP may be \*(<:ELSE\*(:>)
+.LI
+\*(<:WHILE\*(:> test\*(<::\*(:>
+.IS
+As long as \fItest\fP succeeds
+.LI
+\*(<:   \*(:>commands
+.IS
+    execute \fIcommands\fP
+.LI
+\*(<:FOR\*(:>\ name\*(<:,\*(:>\^.\^.\^.\ \*(<:IN\*(:>\ train\*(<::\*(:>
+.IS
+Take each element of \fItrain\fP in turn
+.LI
+\*(<:   \*(:>commands
+.IS
+.Sh "HOW-TO's"
+.LI
+\*(<:HOW\ TO\ \fIKEYWORD\fR\*(:>\ .\^.\^.\*(<::\*(:>
+.IS
+Define new command \fIKEYWORD\fP\ .\^.\^.
+.LI
+\*(<:   \*(:>commands
+.IS
+.LI
+\*(<:HOW\ TO\ RETURN\*(:>\ f\*(<::\*(:>
+.IS
+Define new function \fIf\fP with no arguments
+.LI
+\*(<:   \*(:>commands
+.IS
+   (returns a value)
+.LI
+\*(<:HOW\ TO\ RETURN\*(:>\ f\ x\*(<::\*(:>
+.IS
+Define new function \fIf\fP with one argument
+.LI
+\*(<:   \*(:>commands
+.IS
+.LI
+\*(<:HOW\ TO\ RETURN\*(:> x f y\*(<::\*(:>
+.IS
+Define new function \fIf\fP with two arguments
+.LI
+\*(<:   \*(:>commands
+.IS
+.LI
+\*(<:HOW\ TO\ REPORT\*(:> pr\*(<::\*(:>
+.IS
+Define new predicate \fIpr\fP with no arguments
+.LI
+\*(<:   \*(:>commands
+.IS
+   (succeeds/fails) 
+.LI
+\*(<:HOW\ TO\ REPORT\*(:> pr x\*(<::\*(:>
+.IS
+Define new predicate \fIpr\fP with one argument
+.LI
+\*(<:   \*(:>commands
+.IS
+.LI
+\*(<:HOW\ TO\ REPORT\*(:> x pr y\*(<::\*(:>
+.IS
+Define new predicate \fIpr\fP with two arguments
+.LI
+\*(<:   \*(:>commands
+.IS
+.Lp
+.LI
+\*(<:SHARE\*(:> name\*(<:,\*(:>.\^.\^.
+.IS
+Share permanent locations
+.if n .br
+(before commands of how-to)
+.Sh "Refinements (after the commands of a how-to)"
+.LI
+KEYWORD \*(<::\*(:> commands
+.IS
+Define command refinement
+.LI
+name\*(<::\*(:> commands
+.IS
+Define expression- or test-refinement
+.Sh "Terminating commands" ""
+.LI
+\*(<:QUIT\*(:>
+.IS
+Leave command how-to or command refinement,
+.br
+or leave ABC
+.LI
+\*(<:RETURN\*(:> expr
+.IS
+Leave function how-to or expression refinement,
+.if t .br
+return value of \fIexpr\fP
+.LI
+\*(<:REPORT\*(:> test
+.IS
+Leave predicate how-to or test-refinement,
+.br
+report outcome of \fItest\fP
+.LI
+\*(<:SUCCEED\*(:>
+.IS
+The same, report success
+.LI
+\*(<:FAIL\*(:>
+.IS
+The same, report failure
+.Sh "EXPRESSIONS AND ADDRESSES"
+.LI
+\*(<:666\*(:>,\ \*(<:3.14\*(:>,\ \*(<:3.14e-9\*(:>
+.IS
+Exact constants
+.Lp
+.LI
+expr\*(<:,\*(:>expr\*(<:,\*(:>\^.\^.\^.
+.IS
+Compound
+.LI
+name\*(<:,\*(:>name\*(<:,\*(:>\^.\^.\^.
+.IS
+Naming (may also be used as address)
+.Lp
+.LI
+text\|\*(<:@\*(:>\|p
+.IS
+\*(<:"ABCD"@2 = "BCD"\*(:> (also address)
+.\"Trimmed text, from p-th character on (also address)
+.LI
+text\*(<:|\*(:>q
+.IS
+\*(<:"ABCD"|3 = "ABC"\*(:> (also address)
+.\"The same, first q characters (also address)
+.LI
+text\|\*(<:@\*(:>\|p\*(<:|\*(:>q
+.IS
+\*(<:"ABCD"@2|1 = "BCD"|1 = "B"\*(:>
+.\"The same, from p-th on, first q characters (also location)
+.Lp
+.LI
+table\*(<:[\*(:>expr\*(<:]\*(:>
+.IS
+Table selection (also address)
+.Lp
+.LI
+\*(<:"Jan"\*(:>,\ \*(<:'Feb'\*(:>,\ \*(<:'Won''t!'\*(:>
+.IS
+Textual displays (empty: \*(<:""\*(:> or \*(<:''\*(:>)
+.LI
+\*(<:"value\ =\ `\*(:>expr\*(<:`;"\*(:>
+.IS
+Conversion of \fIexpr\fP to text
+.Lp
+.LI
+\*(<:{1;\ 2;\ 2;\*(:>\ .\^.\^.\^\*(<:}\*(:>
+.IS
+List display (empty: \*(<:{}\*(:>)
+.LI
+\*(<:{1..9;\*(:>\ .\^.\^.\^\*(<:}\*(:>,\ \*(<:{"a".."z";\*(:>\ .\^.\^.\^\*(<:}\*(:>
+.IS
+List of consecutive values
+.Lp
+.LI
+\*(<:{["Jan"]: 1; ["Feb"]: 2; \*(:>.\^.\^.\^\*(<:}\*(:>
+.IS
+Table display (empty: \*(<:{}\*(:>)
+.Lp
+.LI
+f,\ f x,\ x f y
+.IS
+Result of function \fIf\fP (no permanent effects)
+.LI
+name
+.IS
+Result of refinement (no permanent effects)
+.Sh "TESTS"
+.LI
+x \*(<:<\*(:> \|y,\ x \*(<:<=\*(:> \|y,\ x \*(<:>=\*(:> \|y,\ x \*(<:>\*(:> \|y
+.IS
+Order tests
+.LI
+x \*(<:=\*(:> \|y,\ x \*(<:<>\*(:> \|y
+.IS
+     (\*(<:<>\*(:> means \*Qnot equals\*U)
+.LI
+\*(<:0\ <=\ d\ <\ 10\*(:>
+.Lp
+.LI
+pr,\ pr x,\ x pr y
+.IS
+Outcome of predicate \fIpr\fP (no permanent effects)
+.LI
+name
+.IS
+Outcome of refinement (no permanent effects)
+.Lp
+.LI
+test\ \*(<:AND\*(:>\ test\ \*(<:AND\*(:>\ .\^.\^.
+.IS
+Fails as soon as one of the tests fails
+.LI
+test\ \*(<:OR\*(:>\ test\ \*(<:OR\*(:>\ .\^.\^.
+.IS
+Succeeds as soon as one of the tests succeeds
+.LI
+\*(<:NOT\*(:>\ test
+.Lp
+.LI
+\*(<:SOME \*(:>name\*(<:,\*(:>\^.\^.\^. \*(<:IN\*(:> train \*(<:HAS\*(:> test
+.IS
+.if n .br
+Sets \fIname\fP, .\^.\^. on success
+.LI
+\*(<:EACH \*(:>name\*(<:,\*(:>\^.\^.\^. \*(<:IN\*(:> train \*(<:HAS\*(:> test
+.IS
+.if n .br
+Sets \fIname\fP, .\^.\^. on failure
+.LI
+\*(<:NO   \*(:>name\*(<:,\*(:>\^.\^.\^. \*(<:IN\*(:> train \*(<:HAS\*(:> test
+.IS
+.if n .br
+Sets \fIname\fP, .\^.\^. on failure
+.ne 5
+.Sh "PREDEFINED FUNCTIONS AND PREDICATES"
+.ns
+.Sh "Functions and predicates on numbers"
+.LI
+\*(<:~\*(:>x
+.IS
+Approximate value of \fIx\fP
+.LI
+\*(<:exactly\*(:>\ x
+.IS
+Exact value of \fIx\fP
+.LI
+\*(<:exact\*(:> x
+.IS
+Test if \fIx\fP is exact
+.LI
+\*(<:+\*(:>x,\ x\*(<:+\*(:>y,\ x\*(<:-\*(:>y,\ \*(<:-\*(:>x,\ x\*(<:*\*(:>y,\ x\*(<:/\*(:>y
+.IS
+Plain arithmetic
+.LI
+x\*(<:**\*(:>y
+.IS
+\fIx\fP raised to the power \fIy\fP
+.LI
+\*(<:root\*(:>\ x,\ n\ \*(<:root\*(:>\ x
+.IS
+Square root, \fIn\fP-th root
+.LI
+\*(<:abs\*(:>\ x,\ \*(<:sign\*(:>\ x
+.IS
+Absolute value, sign (= \(mi1, 0, or +1)
+.LI
+\*(<:round\*(:>\ x,\ \*(<:floor\*(:>\ x,\ \*(<:ceiling\*(:>\ x
+.IS
+Rounded to whole number
+.LI
+n\ \*(<:round\*(:>\ x
+.IS
+\fIx\fP rounded to \fIn\fP digits after decimal point
+.LI
+a\ \*(<:mod\*(:>\ n
+.IS
+Remainder of \fIa\fP on division by \fIn\fP
+.LI
+\*(<:*/\*(:>x
+.IS
+Numerator of exact number \fIx\fP
+.LI
+\*(<:/*\*(:>x
+.IS
+Denominator
+.LI
+\*(<:random\*(:>
+.IS
+Random approximate number \fIr\fP, 0 \*(<= \fIr\fP < 1
+.LI
+\*(<:e\*(:>,\ \*(<:exp\*(:>\ x
+.IS
+Base of natural logarithm, exponential function
+.LI
+\*(<:log\*(:>\ x,\ b\ \*(<:log\*(:>\ x
+.IS
+Natural logarithm, logarithm to the base \fIb\fP
+.LI
+\*(<:pi\*(:>,\ \*(<:sin\*(:>\ x,\ \*(<:cos\*(:>\ x,\ \*(<:tan\*(:>\ x,\ \*(<:arctan\*(:>\ x
+.IS
+.if n .br
+Trigonometric functions, with \fIx\fP in radians
+.LI
+\*(<:angle\*(:>\ (x,\ y),\ \*(<:radius\*(:>\ (x,\ y)
+.IS
+Angle of and radius to point \fI(x,\ y)\fP
+.LI
+c\ \*(<:sin\*(:>\ x,\ c\ \*(<:cos\*(:>\ x,\ c\ \*(<:tan\*(:>\ x
+.IS
+Similar, with the circle divided into \fIc\fP parts
+.LI
+c\ \*(<:arctan\*(:>\ x,\ c\ \*(<:angle\*(:>\ (x,\ y)
+.IS
+    (e.g. 360 for degrees)
+.LI
+\*(<:now\*(:>
+.IS
+e.g. \*(<:(1999, 12, 31, 23, 59, 59.999)\*(:>
+.Sh "Functions on texts"
+.LI
+t\*(<:^\*(:>u
+.IS
+\fIt\fP and \fIu\fP joined into one text
+.LI
+t\*(<:^^\*(:>n
+.IS
+\fIt\fP repeated \fIn\fP times
+.LI
+\*(<:lower\*(:>\ t
+.IS
+\*(<:lower "aBc" = "abc"\*(:>
+.LI
+\*(<:upper\*(:>\ t
+.IS
+\*(<:upper "aBc" = "ABC"\*(:>
+.LI
+\*(<:stripped\*(:>\ t
+.IS
+Strip leading and trailing spaces from \fIt\fP
+.LI
+\*(<:split\*(:>\ t
+.IS
+Split text \fIt\fP into words
+.Sh "Function on tables"
+.LI
+\*(<:keys\*(:> table
+.IS
+List of all keys in \fItable\fP
+.Sh "Functions and predicates on trains"
+.LI
+\*(<:#\*(:>train
+.IS
+Number of elements in \fItrain\fP
+.LI
+e\*(<:#\*(:>train
+.IS
+Number of elements equal to \fIe\fP
+.LI
+e \*(<:in\*(:> train,\ e \*(<:not.in\*(:> train
+.IS
+Test for presence or absence
+.LI
+\*(<:min\*(:> train
+.IS
+Smallest element of \fItrain\fP
+.LI
+e \*(<:min\*(:> train
+.IS
+Smallest element larger than \fIe\fP
+.LI
+\*(<:max\*(:> train,\ e \*(<:max\*(:> train
+.IS
+Largest element
+.LI
+train \*(<:item\*(:> n
+.IS
+\fIn\fP-th element
+.LI
+\*(<:choice\*(:> train
+.IS
+Random element
+.Sh "Functions on all types"
+.LI
+x\*(<:<<\*(:>n
+.IS
+\fIx\fP converted to text, aligned left in width \fIn\fP
+.LI
+x\*(<:><\*(:>n
+.IS
+The same,\ centred
+.LI
+x\*(<:>>\*(:>n
+.IS
+The same, aligned right
+.Sh "THE CHARACTERS"
+.LI
+\&\*(<: !"#$%&'()*+,-./\*(:>
+.IS
+This is the order of all characters
+.LI
+\&\*(<:0123456789:;<=>?\*(:>
+.IS
+that may occur in a text.
+.LI
+\*(<:@ABCDEFGHIJKLMNO\*(:>
+.IS
+(The first is a space.)
+.LI
+\*(<:PQRSTUVWXYZ[\e]^_\*(:>
+.LI
+\*(<:`abcdefghijklmno\*(:>
+.LI
+\*(<:pqrstuvwxyz{|}~\*(:>
+\fR

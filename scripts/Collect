@@ -1,0 +1,28 @@
+: sh or ksh script
+
+# Collect error messages from source files.
+#
+# Messages must have the form MESS(number, "string") and be contained
+# on one line.  They are output in the form
+# 	number [star] tab string
+# where [star] is a * after the number, present for system errors.
+# System errors are those lines that also contain the text "syserr" or
+# "SMESS"; the message number is repeated in the message text.
+# There are some more conventions for error messages, in particular
+# \n is replaced by a newline character, and %s may be replaced by
+# a parameter (e.g., ("you haven't yold me HOW TO %s").
+#
+# This script is called from the Makefile.  Its arguments are the files
+# from which messages must be collected.  The list of messages, sorted
+# by number, appears on the output.
+#
+# Since this script is somewhat naive, the output should be inspected
+# carefully (you might do a 'diff abc.msg abc.mse').
+# There is a companion script, Change, which assigns new numbers to
+# messages.
+
+grep 'MESS([0-9]' $* |
+sed '/syserr/s/.*MESS(\([0-9]*\), *"\(.*\)").*/\1*	\2 (\1)/
+	/SMESS/s/.*MESS(\([0-9]*\), *"\(.*\)").*/\1*	\2 (\1)/
+	s/.*MESS(\([0-9]*\), *"\(.*\)").*/\1	\2/' |
+sort -n

@@ -1,0 +1,468 @@
+# This file has been shortened considerably for the ABC distribution
+# and derives from a very old public-domain version. It should only be seen
+# as an example.
+# Ask yous boss to pay for a decent unix:-).
+#
+# This file describes capabilities of various terminals, as needed by
+# software such as screen editors.  It does not attempt to describe
+# printing terminals very well, nor graphics terminals.  Someday.
+# See termcap(5) in the Unix Programmers Manual for documentation.
+#
+# Conventions: First entry is two chars, first char is manufacturer,
+# second char is canonical name for model or mode.
+# Third entry is the one the editor will print with "set" command.
+# Last entry is verbose description.
+# Others are mnemonic synonyms for the terminal.
+#
+# Terminal naming conventions:
+# Terminal names look like <manufacturer> <model> - <modes/options>
+# Certain abbreviations (e.g. c100 for concept100) are also allowed
+# for upward compatibility.  The part to the left of the dash, if a
+# dash is present, describes the particular hardware of the terminal.
+# The part to the right can be used for flags indicating special ROM's,
+# extra memory, particular terminal modes, or user preferences.
+# All names are always in lower case, for consistency in typing.
+#
+# The following are conventionally used flags:
+#	rv	Terminal in reverse video mode (black on white)
+#	2p	Has two pages of memory.  Likewise 4p, 8p, etc.
+#	w	Wide - in 132 column mode.
+#	pp	Has a printer port which is used.
+#	na	No arrow keys - termcap ignores arrow keys which are
+#		actually there on the terminal, so the user can use
+#		the arrow keys locally.
+#  
+# There are some cases where the same name is used for two different
+# terminals, e.g. "teleray" or "2621" or "vt100".  In these cases,
+# if a site has one of these, they should choose a local default and
+# bring that terminal to the front in the reorder script.  This works
+# because tgetent picks the first match in /etc/termcap.
+# The list of names intentionally duplicated is:
+# 2621, c108, dtc, hp2621, teleray, tvi, vt100.
+#
+# If you absolutely MUST check for a specific terminal (this is discouraged)
+# check for the 2nd entry (the canonical form) since all other codes are
+# subject to change.  The two letter codes are there for version 6 and are
+# EXTREMELY subject to change, or even to go away if version 6 becomes for
+# all practical purposes obsolete.  We would much rather put in special
+# capabilities to describe your terminal rather than having you key on the
+# name.
+#
+#  Special manufacturer codes:
+#	A: hardcopy daisy wheel terminals
+#	M: Misc. (with only a few terminals)
+#  	q: Homemade
+#  	s: special (dialup, etc.)
+#  
+# Comments in this file begin with # - they cannot appear in the middle
+# of a termcap entry.  Individual entries are commented out by
+# placing a period between the colon and the capability name.
+#
+#  This file is to be installed with an editor script (reorder)
+#  that moves the most common terminals to the front of the file.
+#  If the source is not available, it can be constructed by sorting
+#  the above entries by the 2 char initial code.
+#
+# ...
+#
+# CIT 80  - vt 100 emulator, the termcap has been modified to remove
+#           the delay times and do an auto tab set rather than the indirect 
+#           file used in vt100.
+MT|cit80|cit 80|Citoh 80:\
+	:co#80:li#24:am:cl=\E[;H\EJ:bs:cm=\E[%i%2;%2H:nd=\E[C:up=\E[A:\
+	:ce=\EK:cd=\EJ:is=\E>:ks=\E[?1h\E=:ke=\E[?1l\E>:\
+	:ku=\EOA:kd=\EOB:kr=\EOC:kl=\EOD:
+# AlternateCIT 101 - vt 100 emulator, the termcap has been modified to remove
+#           the delay times and do an auto tab set rather than the indirect 
+#           file used in vt100.
+#	    Uses 23 lines so can run citsys (like h19sys).
+MU|citc|Citoh fast vt100:\
+	:co#80:li#23:am:cl=\E[;H\E[2J:bs:cm=\E[%i%2;%2H:nd=\E[C:up=\E[A:\
+	:ce=\E[K:cd=\E[J:so=\E[7m:se=\E[m:us=\E[4m:ue=\E[m:\
+	:is=\E>\E[?3l\E[?4l\E[?5l\E[?7h\E[?8h\E[3g\E[>5g:\
+	:ks=\E[?1h\E=:ke=\E[?1l\E>:ku=\EOA:kd=\EOB:kr=\EOC:kl=\EOD:\
+        :vb=\E[?5h\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\E[?5l:\
+	:dc=\E[P:al=\E[L:im=:ei=:dl=\E[M:ic=\E[@:
+# Note several versions of blit.  I don't know exactly what is what
+# so please send me any corrections to this -- mrh
+# From research!ikeya!rob Tue Aug 31 23:41 EDT 1982
+MY|blit|jerq|blit-pb|blit running teletype rom:\
+	:cr=^M:do=^J:nl=^J:bl=^G:ta=^I:\
+	:IC=\Ef%+ :DC=\Ee%+ :AL=\EF%+ :DL=\EE%+ :\
+	:mi:dl=\EE!:ic=\Ef!:dc=\Ee!:al=\EF!:\
+	:ce=\EK:cl=^L:cm=\EY%r%+ %+ :co#87:li#72:nd=\EC:\
+	:up=\EA:ku=\EA:kd=\EB:kr=\EC:kl=\ED:kb=^H:am:ul:pt:eo:
+MZ|cbblit|columbus enhanced tty blit:\
+	:vb=\E^G:so=\EU!:se=\EV!:us=\EU":ue=\EV":cd=\EJ:\
+	:im=\EQ:ei=\ER:ic@:co#88:sf=\EG:tc=blit:
+Ma|oblit|ojerq|first version of blit rom:\
+	:cr=^M:do=^J:nl=^J:bl=^G:\
+	:AL=\Ef%+ :DL=\Ee%+ :mi:dl=\EE:ei=\ER:im=\EQ:dc=\EO:da:db:\
+	:al=\EF:cd=\EJ:ce=\EK:cl=^L:cm=\EY%r%+ %+ :co#88:li#72:nd=\EC:\
+	:up=\EA:vb=\E^G:am:ul:pt:eo:
+Mb|daleblit|daleterm|blit running Dale DeJager's ROM:\
+	:ku=\EA:kd=\EB:kr=\EC:kl=\ED:so=\EU!:se=\EV!:us=\EU":ue=\EV":\
+	:da@:db@:tc=oblit:
+Mc|datapoint|dp3|dp3360|datapoint 3360:\
+	:cr=^M:do=^J:nl=^J:bl=^G:\
+	:am:le=^H:bs:cd=^_:ce=^^:cl=^]^_:co#82:ho=^]:li#25:nd=^x:up=^z:
+#
+# d: DEC (DIGITAL EQUIPMENT CORPORATION)
+#
+# Note that xn glitch in vt100 is not quite the same as concept, since
+# the cursor is left in a different position while in the weird state
+# (concept at beginning of next line, vt100 at end of this line) so
+# all versions of vi before 3.7 don't handle xn right on vt100.
+# I assume you have smooth scroll off or are at a slow enough baud
+# rate that it doesn't matter (1200? or less).  Also this assumes
+# that you set auto-nl to "on", if you set it off use vt100-nam below.
+#
+# Since there are two things here called vt100, the installer can make
+# a local decision to make either one standard "vt100" by including
+# it in the list of terminals in reorder, since the first vt100 in
+# /etc/termcap is the one that it will find.  The choice is between
+# nam (no automatic margins) and am (automatic margins), as determined
+# by the wrapline switch (group 3 #2).  I presonally recommend turning
+# on the bit and using vt100-am, since having stuff hammer on the right
+# margin is sort of hard to read.  However, the xn glitch does not occur
+# if you turn the bit off.
+#
+# I am unsure about the padding requirements listed here.  I have heard
+# a claim that the vt100 needs no padding.  It's possible that it needs
+# padding only if the xon/xoff switch is off.  For UNIX, this switch
+# should probably be on.
+#
+# The vt100 uses rs and rf rather than is/ct/st because the tab settings
+# are in non-volatile memory and don't need to be reset upon login.
+# You can type "reset" to get them set.
+dp|vt100-np|vt100 with no padding (for psl games):\
+	:cl=\E[H\E[2J:sr=\EM:cm=\E[%i%d;%dH:nd=\E[C:up=\E[A:\
+	:ce=\E[K:cd=\E[J:so=\E[7m:se=\E[m:us=\E[4m:ue=\E[m:\
+	:md=\E[1m:mr=\E[7m:mb=\E[5m:me=\E[m:tc=vt100:
+d0|vt100|vt100-am|dec vt100:\
+	:cr=^M:do=^J:nl=^J:bl=^G:co#80:li#24:cl=50\E[;H\E[2J:\
+	:le=^H:bs:am:cm=5\E[%i%d;%dH:nd=2\E[C:up=2\E[A:\
+	:ce=3\E[K:cd=50\E[J:so=2\E[7m:se=2\E[m:us=2\E[4m:ue=2\E[m:\
+	:md=2\E[1m:mr=2\E[7m:mb=2\E[5m:me=2\E[m:is=\E[1;24r\E[24;1H:\
+	:rf=/usr/lib/tabset/vt100:\
+	:rs=\E>\E[?3l\E[?4l\E[?5l\E[?7h\E[?8h:ks=\E[?1h\E=:ke=\E[?1l\E>:\
+	:ku=\EOA:kd=\EOB:kr=\EOC:kl=\EOD:kb=^H:\
+	:ho=\E[H:k1=\EOP:k2=\EOQ:k3=\EOR:k4=\EOS:ta=^I:pt:sr=5\EM:vt#3:xn:\
+	:sc=\E7:rc=\E8:cs=\E[%i%d;%dr:
+d1|vt100-nam|vt100 w/no am:\
+	:am@:xn@:tc=vt100-am:
+d2|gt42|dec gt42:\
+	:cr=^M:do=^J:bl=^G:\
+	:le=^H:bs:co#72:ns:li#40:os:
+d3|vt132|vt132:\
+	:al=99\E[L:dl=99\E[M:ip=7:dc=7\E[P:ei=\E[4l:im=\E[4h:xn:dN#30:tc=vt100:
+d4|gt40|dec gt40:\
+	:cr=^M:do=^J:bl=^G:\
+	:le=^H:bs:co#72:ns:li#30:os:
+d5|vt50|dec vt50:\
+	:cr=^M:do=^J:nl=^J:bl=^G:\
+	:le=^H:bs:cd=\EJ:ce=\EK:cl=\EH\EJ:co#80:li#12:nd=\EC:ta=^I:pt:up=\EA:
+d6|vt125|vt125-am|DEC vt125:\
+	:xn:cr=^M:do=^J:nl=^J:bl=^G:co#80:li#24:cl=50\E[H\E[2J:\
+	:le=^H:am:bs:cm=5\E[%i%d;%dH:nd=2\E[C:up=2\E[A:ce=3\E[K:cd=50\E[J:\
+	:so=2\E[7m:se=2\E[m:us=2\E[4m:ue=2\E[m:md=2\E[1m:mr=2\E[7m:mb=2\E[5m:\
+	:me=2\E[m:is=\E[1;24r\E[24;1H\E>\E[?3l\E[?4l\E[?5l\E[?7h\E[?8h:\
+	:ks=\E[?1h\E=:ke=\E[?1l\E>:if=/usr/lib/tabset/vt100:ku=\EOA:kd=\EOB:\
+	:kr=\EOC:kl=\EOD:kb=^H:ho=\E[H:k1=\EOP:k2=\EOQ:k3=\EOR:k4=\EOS:ta=^I:\
+	:pt:sr=5\EM:vt#3:sc=\E7:rc=\E8:cs=\E[%i%d;%dr:
+# DEC gigi color graphic terminal , same as vt52
+d7|gigi|dec gigi terminal:\
+	:co#80:is=200\E>\E[?4l\E[?5l\E[?7h\E[?8h:\
+	:li#24:cl=100\E[;H\E[2J:bs:cm=50\E[%i%2;%2H:nd=200\E[C:up=100\E[A:\
+	:ce=120\E[K:cd=100\E[J:so=20\E[7m:se=20\E[m:us=20\E[4m:ue=20\E[m:\
+	:ks=200\E[?1h\E=:ke=200\E[?1l\E>:\
+	:ku=\EOA:kd=\EOB:kr=\EOC:kl=\EOD:\
+	:kh=\E[H:k1=\EOP:k2=\EOQ:k3=\EOR:k4=\EOS:pt:sr=200\EM:\
+	:dC=50:dF=200:dN=50:dT=50:
+dI|dw1|decwriter I:\
+	:cr=^M:do=^J:nl=^J:bl=^G:\
+	:le=^H:bs:co#72:hc:os:
+# From tut@Topaz.CC Thu May 12 14:49:02 1983
+# From tut@topaz.CC Thu Sep 24 22:10:46 1981
+df|dw4|decwriter IV:\
+	:cr=^M:do=^J:nl=^J:bl=^G:le=^H:bs:co#132:hc:os:am:\
+	:ta=^I:pt:is=\Ec:k0=\EOP:k1=\EOQ:k2=\EOR:k3=\EOS:kb=^H:
+dh|vt50h|dec vt50h:\
+	:cr=^M:do=^J:nl=^J:bl=^G:\
+	:le=^H:bs:cd=\EJ:ce=\EK:cl=\EH\EJ:cm=\EY%+ %+ :co#80:li#12:nd=\EC:\
+	:ta=^I:pt:sr=\EI:up=\EA:
+di|vt100-s|vt100 with status line at top:\
+	:li#23:i2=\E[2;24r\E[24;1H:\
+	:cm@:ho=\E[H^J:cl=50\E[;H^J\E[2J:\
+	:hs:es:ts=\E7\E[1;%dH\E[1K:fs=\E8:tc=vt100-am:
+dj|vt100-s-bot|vt100 with status line at bottom:\
+	:li#23:i2=\E[1;23r\E[23;1H:\
+	:hs:es:ts=\E7\E[24;%dH\E[1K:fs=\E8:tc=vt100-am:
+ds|vt100-nav|dec vt100 132 cols 14 lines (w/o advanced video option):\
+	:li#14:tc=vt100-w:
+dt|vt100-w|dec vt100 132 cols (w/advanced video):\
+	:co#132:li#24:rs=\E>\E[?3h\E[?4l\E[?5l\E[?8h:tc=vt100-am:
+dv|vt100-w-nam|dec vt100 132 cols (w/advanced video), no am:\
+	:co#132:li#24:rs=\E>\E[?3h\E[?4l\E[?5l\E[?8h:vt@:tc=vt100-nam:
+dw|vt52|dec vt52:\
+	:cr=^M:do=^J:nl=^J:bl=^G:\
+	:le=^H:bs:cd=\EJ:ce=\EK:cl=\EH\EJ:cm=\EY%+ %+ :co#80:li#24:nd=\EC:\
+	:ta=^I:pt:sr=\EI:up=\EA:ku=\EA:kd=\EB:kr=\EC:kl=\ED:kb=^H:
+dx|dw2|decwriter II:\
+	:cr=^M:do=^J:nl=^J:bl=^G:\
+	:kb=^h:le=^H:bs:co#132:hc:os:
+# # --------------------------------
+#
+# h: HEWLETT PACKARD
+#
+# Note: no "ho" on HP's since that homes to top of memory, not screen.
+# Due to severe 2621 braindamage, the only way to get the arrow keys to
+# transmit anything at all is to turn on the function key labels
+# (f1-f8) with ks, and even then the poor user has to hold down shift!
+# The default 2621 turns off the labels except when it has to to enable
+# the function keys.  If your installation prefers labels on all the time,
+# or off all the time (at the "expense" of the function keys) move the
+# 2621-nl or 2621-wl labels to the front using reorder.
+# Note: there are newer ROM's for 2621's that allow you to set strap A
+# so the regular arrow keys xmit \EA, etc, as with the 2645.  However,
+# even with this strap set, the terminal stops xmitting if you reset it,
+# until you unset and reset the strap!  Since there is no way to set/unset
+# the strap with an escape sequence, we don't use it in the default.
+# If you like, you can use 2621-ba (braindamaged arrow keys).
+h1|2621-ba|2621 w/new rom, strap A set:\
+	:ks@:ke@:ku=\EA:kd=\EB:kl=\ED:kr=\EC:kh=\Eh:tc=hp2621:
+# 2621 with function labels.  Most of the time they are off,
+# but inside vi, the function key labels appear.  You have to
+# hold down shift to get them to xmit.
+# 2621k45: untested
+# 2622: unsure if this is quite it, have only heard about the terminal.
+h3|2621k45|hp2621k45|k45|2622|hp2622|hp 2621 with 45 keyboard:\
+	:kb=^H:ku=\EA:kd=\EB:kl=\ED:kr=\EC:kh=\Eh:ks=\E&s1A:ke=\E&s0A:tc=2621:
+# This entry does not use any of the fancy windowing stuff of the 2621.
+# Indeed, termcap does not yet handle such stuff.  We are looking at it.
+h6|hp2626|hp2626a|hp2626p|2626|2626a|2626p|hp 2626:\
+	:dc=2\EP:ip=2:se=\E&d@:so=\E&dB:cd=500\EJ:\
+	:mr=\E&dB:us=\E&dD:mb=\E&dA:mk=\E&dS:me=\E&d@:ue=\E&d@:\
+	:kh=\Eh:ku=\EA:kl=\ED:kr=\EC:kd=\EB:ks=\E&s1A:ke=\E&s0A:\
+	:sf=\ES:ta=2^I:xs:tc=2621:
+# cD is a pain - but it only screws up at 9600 baud.
+# You should use this terminal at 4800 baud or less.
+h8|hp2648|hp2648a|2648a|2648|HP 2648a graphics terminal:\
+	:cl=50\EH\EJ:cm=20\E&a%r%dc%dY:dc=7\EP:ip=5:tc=2645:
+# This terminal should be used at 4800 baud or less.
+h9|hp2645-np|2645 w/no padding:cm=\E&a%r%dc%dY:tc=hp2645:
+# 2640a doesn't have the Y cursor addressing feature, and C is memory relative
+# instead of screen relative, as we need.
+# 2621 using all 48 lines of memory, only 24 visible at any time.  Untested.
+hl|2621-48|48 line 2621:\
+	:li#48:ho=\EH:cm=\E&a%r%dc%dR:tc=2621:
+# 2621 with no labels ever.  Also prevents vi delays on escape.
+# Needed for UCB ARPAVAX console, since lsi-11 expands tabs (wrong).
+ht|hp2621-nt|2621nt|2621-nt|hp2621nt|hp 2621 w/no tabs:\
+	:pt@:tc=hp2621:
+# 2621 with labels on all the time - normal outside vi, function inside vi.
+# # --------------------------------
+#
+# l: LEAR SIEGLER (ADM)
+#
+# If the adm31 gives you trouble with standout mode, check the DIP switch
+# in position 6, bank @c11, 25% from back end of pc.  Should be OFF.
+# If there is no such switch, you have an old adm31 and must use oadm31
+l1|adm31|31|lsi adm31:\
+	:is=\Eu\E0:cr=^M:do=^J:nl=^J:bl=^G:\
+	:al=\EE:am:le=^H:bs:ce=\ET:cm=\E=%+ %+ :cl=\E*:cd=\EY:\
+	:co#80:dc=\EW:dl=\ER:ei=\Er:ho=^^:im=\Eq:\
+	:k0=^A0\r:k1=^A1\r:k2=^A2\r:k3=^A3\r:k4=^A4\r:\
+	:k5=^A5\r:k6=^A6\r:k7=^A7\r:k8=^A8\r:k9=^A9\r:kd=^J:kl=^H:kr=^L:ku=^K:\
+	:li#24:ma=j^Jk^P^K^Pl ^R^L^L :mi:nd=^L:\
+	:se=\EG0:so=\EG1:up=^K:us=\EG1:ue=\EG0:
+l2|adm2|lsi adm2:\
+	:cr=^M:do=^J:nl=^J:bl=^G:al=\EE:am:le=^H:bs:cd=\EY:ce=\ET:cl=\E;:\
+	:cm=\E=%+ %+ :co#80:dc=\EW:dl=\ER:\
+	:ei=:ho=^^:ic=\EQ:im=:kd=^J:kh=^^:kl=^H:kr=^L:ku=^K:li#24:nd=^L:up=^K:
+l3|adm3|3|lsi adm3:\
+	:cr=^M:do=^J:nl=^J:bl=^G:\
+	:am:le=^H:bs:cl=^Z:li#24:ma=^K^P:co#80:
+l4|adm42|42|lsi adm42:\
+	:vs=\EC\E3 \E3(:\
+	:cr=^M:do=^J:nl=^J:bl=^G:\
+	:al=270\EE:am:le=^H:bs:cd=\EY:ce=\ET:cl=\E;:cm=\E=%+ %+ :co#80:\
+	:dc=\EW:dl=\ER:ei=\Er:im=\Eq:ip=6*:li#24:\
+	:bt=\EI:nd=^L:se=\EG0:so=\EG4:ta=\t:up=^k:\
+	:ma=^K^P:pc=\177:
+l5|adm5|5|lsi adm5:\
+	:cr=^M:do=^J:nl=^J:bl=^G:\
+	:cd=\EY:ce=\ET:do=^J:kb=^H:kh=^^:\
+	:ma=^Hh^Jj^Kk^Ll^^H:se=\EG:sg#1:so=\EG:tc=adm3aplus:
+l7|adm20|lear siegler adm20:\
+	:am:li#24:co#80:bs:cl=^Z:cm=\E=%i%r%+^_%+^_:nd=^L:up=^K:ho=^^:ce=\ET:\
+	:cd=\EY:al=\EE:dl=\ER:im=:ei=:ic=\EQ:dm=:ed=:dc=\EW:so=\E):se=\E(:\
+	:bt=\EI:pt:kn#7:k1=^A:k2=^B:k3=^W:k4=^D:k5=^E:k6:^X:k7=^Z:
+la|adm3a|3a|lsi adm3a:\
+	:am:cr=^M:do=^J:nl=^J:bl=^G:\
+	:le=^H:bs:cm=\E=%+ %+ :cl=1^Z:co#80:ho=^^:li#24:ma=^K^P:nd=^L:up=^K:
+lb|adm3a+|3a+|adm3aplus:\
+	:kl=^H:kd=^J:ku=^K:kr=^L:tc=adm3a:
+lc|adm22|22|lsi adm22:\
+	:is=\E%\014\014\014\016\003\000\003\002\003\002\000\000\000\000\000\000\000\000\000\000\000:\
+	:al=\EE:am:bs:bt=\EI:cd=\Ey:ce=\Et:cl=\E+:cm=\000\E=%+ %+ :co#80:\
+	:cr=^M:dc=\EW:dl=\ER:do=^J:em=:ho=^^:ic=\EQ:im=:\
+	:k1=\001@\015:k2=\001A\015:k3=\001B\015:k4=\001C\015:\
+	:k5=\001D\015:k6=\001E\015:k7=\001F\015:kn#7:\
+	:ko=ho:\
+	:l1=F1:l2=F2:l3=F3:l4=F4:l5=F5:l6=F6:l7=F7:\
+	:kb=^H:kd=^J:kh=^^:kl=^H:kr=^L:ku=^K:li#24:\
+	:ma=j^Jk^P^K^Pl ^R^L^L :nd=^L:nl=^J:\
+	:se=\E(:so=\E):ta=\Ei:up=^K:
+# # --------------------------------
+#
+# v: TELEVIDEO
+#
+# There are some tvi's that require incredible amounts of padding and
+# some that don't.  I'm assuming 912 and 920 are the old slow ones,
+# and 912b, 912c, 920b, 920c are the new ones that don't need padding.
+v1|tvi912|912|920|tvi920|old televideo:\
+	:ct=\E3:st=\E1:cr=^M:do=^J:nl=^J:bl=^G:\
+	:al=33*\EE:le=^H:ce=\ET:cm=\E=%+ %+ :cl=^Z:co#80:dc=\EW:dl=33*\ER:ei=:\
+	:kb=^h:ku=^K:kd=^J:kl=^H:kr=^L:k0=^A@\r:k1=^AA\r:k2=^AB\r:k3=^AC\r:\
+	:bs:am:k4=^AD\r:k5=^AE\r:k6=^AF\r:k7=^AG\r:k8=^AH\r:k9=^AI\r:\
+	:ho=^^:im=:ic=\EQ:li#24:nd=^L:ta=^I:pt:se=\Ek:so=\Ej:up=^K:us=\El:ue=\Em:\
+	:ma=^K^P^L :sg#1:ug#1:
+# the 912 has a <funct> key that's like shift: <funct>8 xmits "^A8\r".
+# The 920 has this plus real function keys that xmit different things.
+# Termcap makes you use the funct key on the 912 but the real keys on the 920.
+v2|912b|912c|tvi912b|tvi912c|tvi|new televideo 912:\
+	:al=5*\EE:dl=5*\ER:tc=tvi912:
+v3|920b|920c|tvi920b|tvi920c|new televideo 920:\
+	:k0=^A@\r:k1=^AA\r:k2=^AB\r:k3=^AC\r:k4=^AD\r:k5=^AE\r:\
+	:k6=^AF\r:k7=^AG\r:k8=^AH\r:k9=^AI\r:tc=tvi912b:
+# set to page 1 when entering ex (\E-17 )
+# reset to page 0 when exiting ex (\E-07 )
+v4|tvi912-2p|tvi920-2p|912-2p|920-2p|tvi-2p|televideo w/2 pages:\
+	:ti=\E-17 :te=\E-07 :tc=tvi912:\
+v5|tvi950-ap|tvi 950 w/alt pages:\
+	:is=\E\\1:ti=\E-06 :te=\E-16 :tc=tvi950:
+v6|tvi950-b|bare tvi950 no is:\
+	:is@:tc=tvi950:
+v7|tvi950-ns|tvi950 w/no standout:\
+	:so@:se@:us@:ue@:tc=tvi950:
+v8|tvi925|925|televideo model 925:\
+	:hs:xn:am:bs:co#80:li#24:cm=\E=%+ %+ :cl=^Z:cd=\EY:ce=\ET:is=\El\E":\
+	:al=\EE:dl=\ER:im=:ei=:ic=\EQ:dc=\EW:if=/usr/lib/tabset/stdcrt:\
+	:ho=^^:nd=^L:bt=\EI:pt:so=\EG4:se=\EG0:sg#1:us=\EG8:ue=\EG0:ug#1:\
+	:up=^K:do=^V:kb=^H:ku=^K:kd=^V:kl=^H:kr=^L:kh=^^:ma=^V^J^L :\
+	:k1=^A@\r:k2=^AA\r:k3=^AB\r:k4=^AC\r:k5=^AD\r:k6=^AE\r:k7=^AF\r:\
+	:k8=^AG\r:k9=^AH\r:k0=^AI\r:ko=ic,dc,al,dl,cl,ce,cd,bt:\
+	:ts=\Ef:fs=\Eg:
+# entry by Tim Curry 5/21/82 Univ. of Central Fla. duke!ucf-cs!tim
+v9|925a|tvi925a|TeleVideo Model 925:\
+        :al=\EE:am:bs:bt=\EI:bw:cd=\EY:ce=\ET:cl=^Z:cm=\E=%+ %+ :co#80:dc=\EW:\
+        :dl=\ER:do=^V:ei=:ic=\EQ:if=/usr/lib/tabset/std:im=:kb=^H:kd=^V:\
+        :kh=^^:kl=^H:kn#12:kr=^L:ku=^K:li#24:nd=^L:pt:se=\EG0:sg=#1:so=\EG4:\
+        :ue=\EG0:ug#1:ul:up=^K:us=\EG8:is=\El\
+        :vb=\Eb\200\200\200\200\200\200\200\200\200\200\200\200\200\200\Ed:\
+        :ve=\E.4:vs=\E.2:
+# The following tvi descriptions from B:pjphar and virus!mike
+# is for all 950's.  It sets the following attributes:
+# full duplex (\EDF)		write protect off (\E()
+# conversation mode (\EC)	graphics mode off (\E%)
+# white on black (\Ed)		auto page flip off (\Ew)
+# turn off status line (\Eg)	clear status line (\Ef\r)
+# normal video (\E0)		monitor mode off (\EX or \Eu)
+# edit mode (\Er)		load blank char to space (\Ee\040)
+# line edit mode (\EO)		enable buffer control (^O)
+# protect mode off (\E\047)	duplex edit keys (\El)
+# program unshifted send key to send line all (\E016)
+# program shifted send key to send line unprotected (\E004)
+# set the following to nulls:
+#	field delimiter (\Ex0\200\200)
+#	line delimiter (\Ex1\200\200)
+#	start-protected field delimiter (\Ex2\200\200)
+#	end-protected field delimiter (\Ex3\200\200)
+# set end of text delimiter to carriage return/null (\Ex4\r\200)
+#
+va|tvi950|950|televideo950:\
+	:ct=\E3:st=\E1:cr=^M:do=^J:nl=^J:bl=^G:\
+	:is=\EDF\EC\Ed\EG0\Eg\Er\EO\E\047\E(\E%\Ew\EX\Ee ^O\
+	\El\E016\E004\Ex0\200\200\Ex1\200\200\Ex2\200\200\
+	\Ex3\200\200\Ex4\r\200\Ef\r:\
+	:al=\EE:am:le=^H:bs:bt=\EI:cd=\Ey:ce=\Et:cl=\E*:cm=\E=%+ %+ :\
+	:co#80:dc=\EW:dl=\ER:do=^V:ei=\Er:ho=^^:im=\Eq:k0=^A0\r:\
+	:k1=^A@\r:k2=^AA\r:k3=^AB\r:k4=^AC\r:k5=^AD\r:k6=^AE\r:\
+	:k7=^AF\r:k8=^AG\r:k9=^AH\r:kb=^H:kd=^V:kh=^^:kl=^H:\
+	:ko=ic\054dc\054al\054dl\054cl\054bt\054ce\054cd:kr=^L:\
+	:ku=^K:li#24:ma=^Vj^Kk^Hh^Ll^^H:mi:ms:nd=^L:ta=^I:pt:se=\EG0:\
+	:sg#1:so=\EG4:sr=\Ej:ue=\EG0:ug#1:up=^K:us=\EG8:\
+	:vb=\Eb\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\Ed:\
+	:xn:hs:ts=\Eg\Ef:fs=\r:ds=\Eg\Ef\r:
+#
+# is for 950 with two pages adds the following:
+#	set 48 line page (\E\\2)
+#	place cursor at page 0, line 24, column 1 (\E-07 )
+#	set local (no send) edit keys (\Ek)
+#
+# two page 950 adds the following:
+#	when entering ex, set 24 line page (\E\\1)
+#	when exiting ex, reset 48 line page (\E\\2)
+#			 place cursor at 0,24,1 (\E-07 )
+#	set duplex (send) edit keys (\El) when entering vi
+#	set local (no send) edit keys (\Ek) when exiting vi
+#
+vb|tvi950-2p|950-2p|televideo950 w/2 pages:\
+	:is=\EDF\EC\Ed\EG0\Eg\Er\EO\E\047\E(\E%\Ew\EX\Ee ^O\
+	\Ek\E016\E004\Ex0\200\200\Ex1\200\200\Ex2\200\200\
+	\Ex3\200\200\Ex4\r\200\E\\2\E-07 \
+	:te=\E\\2\E-07 :ti=\E\\1\E-07 :ks=\El:ke=\Ek:tc=tvi950:
+#
+# is for 950 with four pages adds the following:
+#	set 96 line page (\E\\3)
+#	place cursor at page 0, line 24, column 1 (\E-07 )
+#
+# four page 950 adds the following:
+#	when entering ex, set 24 line page (\E\\1)
+#	when exiting ex, reset 96 line page (\E\\3)
+#			 place cursor at 0,24,1 (\E-07 )
+#
+vc|tvi950-4p|950-4p|televideo950 w/4 pages:\
+	:is=\EDF\EC\Ed\EG0\Eg\Er\EO\E\047\E(\E%\Ew\EX\Ee ^O\
+	\Ek\E016\E004\Ex0\200\200\Ex1\200\200\Ex2\200\200\
+	\Ex3\200\200\Ex4\r\200\E\\3\E-07 \
+	:te=\E\\3\E-07 :ti=\E\\1\E-07 :ks=\El:ke=\Ek:tc=tvi950:
+#
+# is for reverse video 950 changes the following:
+#	set reverse video (\Ed)
+#
+# set vb accordingly (\Ed ...nulls... \Eb)
+#
+vd|tvi950-rv|950-rv|televideo950 rev video:\
+	:is=\EDF\EC\Eb\EG0\Eg\Er\EO\E\047\E(\E%\Ew\EX\Ee ^O\
+	\El\E016\E004\Ex0\200\200\Ex1\200\200\Ex2\200\200\
+	\Ex3\200\200\Ex4\r\200:\
+	:vb=\Ed\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\Eb:\
+	:tc=tvi950:
+#
+# uses the appropriate entries from 950-2p and 950-rv
+#
+ve|tvi950-rv-2p|950-rv-2p|televideo950 rev video w/2 pages:\
+	:is=\EDF\EC\Eb\EG0\Eg\Er\EO\E\047\E(\E%\Ew\EX\Ee ^O\
+	\Ek\E016\E004\Ex0\200\200\Ex1\200\200\Ex2\200\200\
+	\Ex3\200\200\Ex4\r\200\E\\2\E-07 :\
+	:vb=\Ed\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\Eb:\
+	:te=\E\\2\E-07 :ti=\E\\1\E-07 :ks=\El:ke=\Ek:tc=tvi950:
+#
+# uses the appropriate entries from 950-4p and 950-rv
+#
+vf|tvi950-rv-4p|950-rv-4p|televideo950 rev video w/4 pages:\
+	:is=\EDF\EC\Eb\EG0\Er\EO\E\047\E(\E%\Ew\EX\Ee ^O\
+	\Ek\E016\E004\Ex0\200\200\Ex1\200\200\Ex2\200\200\
+	\Ex3\200\200\Ex4\r\200\E\\3\E-07 :\
+	:vb=\Ed\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\Eb:\
+	:te=\E\\3\E-07 :ti=\E\\1\E-07 :ks=\El:ke=\Ek:tc=tvi950:
+ve|tvi924|924|televideo model 924:\
+	:am:bs:xn:co#80:li#24:cm=\E=%+ %+ :cl=\E*0:cd=\Ey:ce=\Et:is=\Ek0\E"^O:\
+	:al=\EE:dl=\ER:im=:ei=:ic=\EQ:dc=\EW:if=/usr/lib/tabset/stdcrt:ho=^^:\
+	:nd=^L:bt=\EI:pt:so=\EG4:se=\EG0:us=\EG8:ue=\EG0:up=^K:do=^V:kb=^H:\
+	:ku=^K:kd=^V:kl=^H:kr=^L:kh=^^:ma=^Vj^Kk^Ll^^H^R^L:k1=^A@\r:k2=^AA\r:\
+	:k3=^AB\r:k4=^AC\r:k5=^AD\r:k6=^AE\r:k7=^AF\r:k8=^AG\r:k9=^AH\r:\
+	:k0=^AI\r:ko=ic,dc,al,dl,cl,ce,cd,bt:sr=\Ej:\
+	:hs:fs=^Y\Es1:ts=\Ef:ds=\Es0\Ef^Y:

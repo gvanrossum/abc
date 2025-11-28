@@ -1,0 +1,167 @@
+/*
+ * dep [-o] file ...
+ *
+ * Writes on its output a list of dependancies, usable in a Makefile.
+ * With the -o option, the total list of .obj files 
+ */
+
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+
+#define C_SUFFIX ".c"
+
+#ifdef MSDOS
+#define O_SUFFIX ".obj"
+#endif
+
+#ifdef unix
+#define O_SUFFIX ".o"
+#endif
+
+#ifdef ATARI
+#define O_SUFFIX ".o"
+#endif
+
+
+usage()
+{
+	fprintf(stderr, "Usage: dep [-o] file ...\n");
+	exit(2);
+}
+
+
+extern int errno;
+
+main(argc, argv)
+	int argc;
+	char **argv;
+{
+	char buf[100], *rindex();
+	register char *cp, *rp;
+	register FILE *fp;
+	int errors = 0;
+	int oflag= 0;
+
+	if (argc > 1 && strcmp(argv[1], "-o") == 0) {
+		oflag= 1;
+		++argv;
+		--argc;
+	}
+	if (argc <= 1)
+		usage();
+	if (oflag)
+		printobjs(argc, argv);
+
+	while (--argc > 0) {
+		++argv;
+		fp = fopen(*argv, "r");
+		if (fp == NULL) {
+			perror(*argv);
+			++errors;
+			continue;
+		}
+		putchar('\n');
+		makeobj(buf, *argv);
+		printf("%s:", buf);
+		strcpy(buf, *argv);
+#ifdef MSDOS
+		lowercase(buf);
+#endif
+		printf(" %s", buf);
+		while (fgets(buf, sizeof buf, fp) != NULL) {
+			if (buf[0] != '#')
+				continue;
+			for (cp = buf+1; is_space(*cp); ++cp)
+				;/* skip spaces before "include" */
+			if (strncmp(cp, "include", 7) != 0)
+				continue; /* 7 == strlen("include") */
+			for (cp += 7; is_space(*cp); ++cp)
+				;/* skip spaces after "include" */
+			if (*cp != '"')
+				continue;
+
+			putchar(' ');
+			for (++cp; *cp != '"' && !is_space(*cp) && *cp != '\0';
+					++cp)
+				putchar(*cp);
+		}
+
+		putchar('\n');
+		fclose(fp);
+	}
+
+	return errors > 127 ? 127 : errors;
+}
+
+int
+makeobj(buf, s)
+	char *buf;
+	char *s;
+{
+	char *rp;
+
+	strcpy(buf, s);
+#ifdef MSDOS
+	lowercase(buf);
+#endif
+	rp = rindex(buf, '.');
+	if (rp == NULL || strcmp(rp, C_SUFFIX) != 0)
+		return 0;
+	strcpy(rp, O_SUFFIX);
+	return 1;
+}
+
+#define MAXCOL 80
+
+/* Print the list of object file names. */
+
+printobjs(argc, argv)
+	int argc;
+	char **argv;
+{
+	int i;
+	int col;
+	int len;
+	char buf[100];
+
+	col= 0;
+	for (i= 1; i < argc; ++i) {
+		if (!makeobj(buf, argv[i]))
+			continue;
+		if (col == 0) {
+			printf("OBJS=\t");
+			col= 8;
+		}
+		len= strlen(buf);
+		if (col+len+2 > MAXCOL) {
+			printf("\\\n\t");
+			col= 8;
+		}
+		printf("%s ", buf);
+		col += len+1;
+	}
+	if (col > 0)
+		putchar('\n');
+}
+
+#ifdef MSDOS
+lowercase(s)
+	register char *s;
+{
+	register char c;
+
+	for (; c= *s; ++s) {
+		if (isupper(c))
+			*s= _tolower(c);
+	}
+}
+#endif /* MSDOS */
+
+int
+is_space(c)
+	register char c;
+{
+	return isspace(c);
+}
+

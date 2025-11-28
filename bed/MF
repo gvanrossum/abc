@@ -1,0 +1,1 @@
+all: e1cell.o e1code.o e1comm.o e1deco.o e1edit.o e1edoc.o e1erro.o e1eval.o e1getc.o e1goto.o e1gram.o e1help.o e1ins2.o e1inse.o e1lexi.o e1line.o e1move.o e1node.o e1outp.o e1que1.o e1que2.o e1save.o e1scrn.o e1spos.o e1sugg.o e1supr.o e1tabl.o e1wide.o

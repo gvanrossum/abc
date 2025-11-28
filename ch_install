@@ -1,0 +1,53 @@
+: 'Check if make install went allright.'
+
+abcdir="$1"
+libdir="$2"
+mandir="$3"
+destroot="$4"
+
+errors="no"
+
+echo " "
+
+for f in abc abckeys
+do
+	if test ! -s $destroot$abcdir/$f
+	then
+		echo "*** Failed to install '$f' in $destroot$abcdir"
+		errors="yes"
+	fi
+done
+
+for f in abc.msg abc.hlp
+do
+	if test ! -s $destroot$libdir/$f
+	then
+		echo "*** Failed to install '$f' in $destroot$libdir"
+		errors="yes"
+	fi
+done
+
+if test ! -s $destroot$mandir/abc.1
+then
+	echo "*** Failed to install 'abc.1' manual in $destroot$mandir"
+	errors="yes"
+fi
+
+case $errors in
+yes)
+	exit 1
+	;;
+no)
+	echo "The ABC system is installed."
+	case $destroot in
+	'')	echo "You can clean up with 'make clean'.";;
+	*)	echo "You can copy from $destroot to the target machine."
+		echo "To test ABC there also copy ./ex there,"
+		echo "and use ./ex/DoExamples and ./ex/TryEditor"
+		echo "to test the interpreter and the editor, respectively."
+		echo "If all is well, you can clean up here with 'make clean'."
+		;;
+	esac
+	exit 0
+	;;	
+esac

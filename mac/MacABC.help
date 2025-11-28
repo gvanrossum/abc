@@ -1,0 +1,331 @@
+Helpfile for MacABC.
+
+To adapt: everything between lines with just =i= and === is printed
+by the i-th item in the Help menu.
+
+=1=
+--------------------------------------------------------------------
+Open from Finder:
+
+MacABC             to start in workspace group in folder "abc" on this disk
+
+wsgroup.abc        to start in workspace group in this folder
+
+perm.abc           to start in this workspace
+sugg.abc            idem
+position.abc        idem
+types.abc           idem
+*.cts               idem
+
+xxx.cmd            to execute command defined by this how-to
+                    (provided it has no parameters)
+--------------------------------------------------------------------
+===
+=2=
+--------------------------------------------------------------------
+Open TEXT file as table:
+    Fill an ABC table with text lines from any Macintosh TEXT file
+Save table as TEXT file:
+    Write text lines from an ABC table to a MacWrite TEXT file
+Save how-to's to TEXT file:
+    List the how-to's in workspace on a MacWrite TEXT file
+Pack workspace as TEXT file:
+    Pack how-to's and locations from the current workspace in a TEXT file
+Unpack workspace from TEXT file:
+    Unpack how-to's and locations from a TEXT file in the current workspace
+Page Setup:
+    As in any Mac application ...
+Print location:
+Print how-to:
+Print workspace how-to's:
+    Printing ...
+Recover current workspace:
+    Recover the current workspace when its index is lost
+Recover workspace-group index:
+    Recover the index of a group of workspaces
+Quit:
+    You can also type "QUIT" to finish an ABC session
+--------------------------------------------------------------------
+===
+=3=
+--------------------------------------------------------------------
+Key bindings not shown in menus:
+
+Undo          [Backspace]
+Clear         [Clear]
+Accept        [Tab]
+Newline       [Return]
+Exit          [Enter]
+
+Up      \
+Down     \    Arrow keys
+Left     /
+Right   /
+
+Cut and Clear are actually ABC's Delete; bound to [Cmd-X] and [Clear].
+Copy and Paste are ABC's Copy; bound to [Cmd-C] and [Cmd-V]. 
+These Command-key equivalents also work for disabled menu items. 
+
+ABC's copybuffer is not passed on to the Mac Clipboard.
+--------------------------------------------------------------------
+===
+=4=
+--------------------------------------------------------------------
+:name   visit a how-to
+:       visit last how-to
+::      list how-to's
+
+=name   visit a permanent location
+=       visit last permanent location
+==      list permanent locations
+
+Use "Exit" from the Special menu (or [Enter] key) to end visit.
+
+>name   visit a workspace
+>       visit last workspace
+>>      list workspaces
+--------------------------------------------------------------------
+===
+=5=
+--------------------------------------------------------------------
+NAME      DEFAULT KEYS*    SHORT DESCRIPTION
+
+Undo      [Cmd-Z],         Undo effect of last key pressed (may be repeated)
+           [Backspace]
+Redo      [Cmd-U]          Redo last UNDOne key (may be repeated)
+
+Copy+     [Cmd-C], [Cmd-V] Copy buffer to hole, or focus to buffer
+Delete+   [Cmd-X], [Clear] Delete contents of focus (to buffer if empty)
+
++ Cut and Clear are mapped to ABC's Delete.
+  Copy and Paste are mapped to ABC's Copy.
+  ABC's copybuffer is not (yet) transferred to the Mac's Clipboard.
+  The keyboard equivalents for Copy and Delete always work
+  (regardless of disabled menu items).
+  
+* [Cmd-X] means: hold the [Command] key (with the Clover-leaf symbol
+  or an Apple) down while pressing x.
+--------------------------------------------------------------------
+===
+=6=
+--------------------------------------------------------------------
+NAME      DEFAULT KEYS     SHORT DESCRIPTION
+
+Widen     [Cmd-W]          Widen focus
+Extend    [Cmd-E]          Extend focus (usually to the right)
+First     [Cmd-F]          Move focus to first contained item
+Last      [Cmd-L]          Move focus to last contained item
+Previous  [Cmd-P]          Move focus to previous item
+Next      [Cmd-N]          Move focus to next item
+Upline    [Cmd-U]          Move focus to whole line above
+Downline  [Cmd-D]          Move focus to whole line below
+
+Up        <UpArrow>        Make new hole, move up
+Down      <DownArrow>      Make new hole, move down
+Left      <LeftArrow>      Make new hole, move left
+Right     <RightArrow>     Make new hole, move right
+
+Goto      <mouseclick>     New focus at cursor position
+--------------------------------------------------------------------
+===
+=7=
+--------------------------------------------------------------------
+NAME      DEFAULT KEYS     SHORT DESCRIPTION
+
+Accept    [Tab]            Accept suggestion, focus to hole or end of line
+Return    [Return]         Add line or decrease indentation
+
+Record    [Cmd-R]          Start/stop recording keystrokes
+Play      [Cmd-T]          Play back recorded keystrokes
+
+Exit      [Enter]          Finish changes or execute command
+
+
+Select Pause menu title to temporarily halt interpreter output.
+
+Interrupt [Cmd-.]          Interrupt command execution
+--------------------------------------------------------------------
+===
+=9=
+--------------------------------------------------------------------
+WRITE expr                      Write to screen;
+                                 / before or after expr gives new line
+READ address EG expr            Read expression from terminal to address;
+                                 expr is example
+READ address RAW                Read line of text
+PUT expr IN address             Put value of expr in address
+SET RANDOM expr                 Start random sequence for random and choice
+REMOVE expr FROM list           Remove one element from list
+INSERT expr IN list             Insert in right place
+DELETE address                  Delete permanent location or table entry
+PASS                            Do nothing
+KEYWORD expr KEYWORD ...        Execute user-defined command
+KEYWORD                         Execute refined command
+
+CHECK test                      Check test and stop if it fails
+IF test:                        If test succeeds, execute commands;
+   commands                         no ELSE allowed
+SELECT:                         Select one alternative:
+    test: commands                   try each test in order
+    ...                              (one must succeed;
+    test: commands                   the last test may be ELSE)
+WHILE test:                     As long as test succeeds
+   commands                         execute commands
+FOR name,... IN train:          Take each element of train in turn
+   commands
+--------------------------------------------------------------------
+===
+=10=
+--------------------------------------------------------------------
+HOW TO KEYWORD ...:             Define new command KEYWORD ...
+   commands
+HOW TO RETURN f:                Define new function f with no arguments
+   commands                        (returns a value)
+HOW TO RETURN f x:              Define new function f with one argument
+   commands
+HOW TO RETURN x f y:            Define new function f with two arguments
+   commands
+HOW TO REPORT pr:               Define new predicate pr with no arguments
+   commands                        (succeeds/fails)
+HOW TO REPORT pr x:             Define new predicate pr with one argument
+   commands
+HOW TO REPORT x pr y:           Define new predicate pr with two arguments
+   commands
+
+SHARE name,...                  Share permanent locations
+  (before commands of how-to)
+
+Refinements (after the commands of a how-to)
+
+KEYWORD: commands               Define command refinement
+name: commands                  Define expression- or test-refinement
+
+Terminating commands
+
+QUIT                            Leave command how-to or command refinement,
+                                 or leave ABC
+RETURN expr                     Leave function how-to or expression
+                                 refinement, return value of expr
+REPORT test                     Leave predicate how-to or test-refinement,
+                                 report outcome of test
+SUCCEED                         The same, report success
+FAIL                            The same, report failure
+--------------------------------------------------------------------
+===
+=11=
+--------------------------------------------------------------------
+666, 3.14, 3.14e-9              Exact constants
+
+expr,expr,...                   Compound
+name,name,...                   Naming (may also be used as address)
+text@p                          "ABCD"@2 = "BCD" (also address)
+text|q                          "ABCD"|3 = "ABC" (also address)
+text@p|q                        "ABCD"@2|1 = "BCD"|1 = "B"
+
+table[expr]                     Table selection (also address)
+
+"Jan", 'Feb', 'Won''t!'         Textual displays (empty: "" or '')
+"value = `expr`;"               Conversion of expr to text
+
+{1; 2; 2; ...}                  List display (empty: {})
+{1..9; ...}, {"a".."z"; ...}    List of consecutive values
+
+{["Jan"]: 1; ["Feb"]: 2; ...}   Table display (empty: {})
+
+f, f x, x f y                   Result of function f (no permanent effects)
+name                            Result of refinement (no permanent effects)
+--------------------------------------------------------------------
+===
+=12=
+--------------------------------------------------------------------
+TESTS
+
+x < y, x <= y, x >= y, x > y    Order tests
+x = y, x <> y                        (<> means `not equals')
+0 <= d < 10
+
+pr, pr x, x pr y                Outcome of predicate pr (no permanent
+  effects)
+name                            Outcome of refinement (no permanent effects)
+
+test AND test AND ...           Fails as soon as one of the tests fails
+test OR test OR ...             Succeeds as soon as one of the tests succeeds
+NOT test
+
+SOME name,... IN train HAS test Sets name, ... on success
+EACH name,... IN train HAS test Sets name, ... on failure
+NO   name,... IN train HAS test Sets name, ... on failure
+--------------------------------------------------------------------
+===
+=13=
+--------------------------------------------------------------------
+Functions and predicates on numbers
+
+~x                              Approximate value of x
+exactly x                       Exact value of x
+exact x                         Test if x is exact
++x, x+y, x-y, -x, x*y, x/y      Plain arithmetic
+x**y                            x raised to the power y
+root x, n root x                Square root, n-th root
+abs x, sign x                   Absolute value, sign (= -1, 0, or +1)
+round x, floor x, ceiling x     Rounded to whole number
+n round x                       x rounded to n digits after decimal point
+a mod n                         Remainder of a on division by n
+*/x                             Numerator of exact number x
+/*x                             Denominator
+random                          Random approximate number r, 0 <= r < 1
+e, exp x                        Base of natural logarithm, exponential function
+log x, b log x                  Natural logarithm, logarithm to the base b
+pi, sin x, cos x, tan x, arctan x Trigonometric functions, with x in radians
+angle (x, y), radius (x, y)     Angle of and radius to point (x, y)
+c sin x, c cos x, c tan x       Similar, with the circle divided into c parts
+c arctan x, c angle (x, y)          (e.g. 360 for degrees)
+now                             e.g. (1999, 12, 31, 23, 59, 59.999)
+--------------------------------------------------------------------
+===
+=14=
+--------------------------------------------------------------------
+Functions on texts
+
+t^u                             t and u joined into one text
+t^^n                            t repeated n times
+lower t                         lower "aBc" = "abc"
+upper t                         upper "aBc" = "ABC"
+stripped t                      Strip leading and trailing spaces from t
+split t                         Split text t into words
+
+Function on tables
+
+keys table                      List of all keys in table
+
+Functions and predicates on trains
+
+#train                          Number of elements in train
+e#train                         Number of elements equal to e
+e in train, e not.in train      Test for presence or absence
+min train                       Smallest element of train
+e min train                     Smallest element larger than e
+max train, e max train          Largest element
+train item n                    n-th element
+choice train                    Random element
+--------------------------------------------------------------------
+===
+=15=
+--------------------------------------------------------------------
+Functions on all types
+
+x<<n                            x converted to text, aligned left in width n
+x><n                            The same, centred
+x>>n                            The same, aligned right
+
+THE CHARACTERS
+
+ !"#$%&'()*+,-./                This is the order of all characters
+0123456789:;<=>?                that may occur in a text.
+@ABCDEFGHIJKLMNO                (The first is a space.)
+PQRSTUVWXYZ[\]^_
+`abcdefghijklmno
+pqrstuvwxyz{|}~
+--------------------------------------------------------------------
+===
+

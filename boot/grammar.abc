@@ -1,0 +1,401 @@
+/* Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1988. */
+/*
+ * Grammar for ABC.
+ *
+ * This file defines a grammar with three distinct grammatical items:
+ * classes, Symbols and LEXICALs.
+ *	class-names are [a-z][a-z0-9_]*	   	# lower-case
+ *	Symbol-names are [A-Z][a-z][a-z0-9_]*	# First-upper_rest-lower
+ *	LEXICAL-names are [A_Z][A_Z][A_Z0-9_]*  # ALL_UPPER
+ * (note: the second char of a Symbol or lexical MUST be alphabetic)
+ *
+ * A Symbol definition looks like:
+ *	Put: "PUT ", expression, " IN ", address.
+ * e.g. a sequence of "Fixed text" between quotes, alternated with class- or
+ * LEXICAL-names, separated by comma's, ending with a point;
+ * between names, any of the "TEXT" items may be missing, 
+ * but between "TEXT"'s a name must be there;
+ * there may be no more than MAXCHILD (4, see main.h) names,
+ * and no more than MAXCHILD+1 "TEXT"'s;
+ * the text's "\n", "\t" and "\b" are used in this grammar for ABC's
+ * newline, increase-indentation and decrease-indentation, respectively.
+ *
+ * A class definition looks like:
+ *	optional_comment: Optional; COMMENT.
+ * using only Symbol-names or LEXICAL-names, seperated by comma's and
+ * ending in a point.
+ * It denotes a sequence of possible alternatives for this class.
+ *
+ * The Symbol Optional is defined by mktable at the end of the grammar,
+ * where the ABC editor expects it, as:
+ *	Optional: .
+ * If it is used in the alternative list of a class definition, it must be
+ * the first one.
+ *
+ * A LEXICAL definition looks like:
+ *	NUMBER: "0123456789", "0123456789".
+ * where the first (C-)string denotes the characters this LEXICAL item can
+ * start with, and the second string the ones that may be used in a
+ * continuation.
+ * If the first character of a string is '^', it means: 
+ *	'any character not matching any of the following in this string'.
+ *
+ * Since mktable will generate definitions to "envelop" the LEXICALS,
+ * one should not use the corresponding Symbol name, e.g. Rawinput.
+ * (to prevent clashes in the produced header-file); nor the class-names
+ * e.g. rawinput or rawinput-body (just for readability:-).
+ *  
+ * Any names longer than 100 characters are silently truncated.
+ *  (if in urgent need however, see NAMELEN in main.h)
+ *
+ * All Symbol-names and class-names must be defined in a definition.
+ *
+ * The above rules are checked by 'mktable'.
+ *
+ *
+ * BUT not directly on this file:
+ *
+ * We use the C preprocessor (cc -E) to collect all KEYWORDS of ABC in
+ * a single file 'lang.h'. This way you can easily make a Dutch version:-).
+ * (But also change ../ihdrs/i0lan.h!-).
+ * This changes all "TEXT"-items in Symbol-definitions into R_NAME's.
+ *
+ * A second use of the preprocessor is in #defining frequently occuring
+ * lists of alternative Symbols in class-definitions.
+ * To make the grammar more readable, we only use capitals for the name
+ * of such a list, and start it with A_ (which we never do for LEXICALS).
+ * (This convention is not enforced by the parser in 'mktable'!)
+ *
+ * A third corrollary of the use of the preprocessor is that you can
+ * use C-comments for comments.
+ * (In addition, 'mktable' ignores all lines starting with '#', and
+ * everything between a point ending a definition and the end of the line.)
+ *
+ *
+ * WARNING: parts of the ABC editor depend on this specific grammar;
+ * if you change anything, you might have to change part of the editor too.
+ */
+
+#include "lang.h"
+
+/*
+ * Root symbol:
+ * (since the ABC editor cannot stand zero's for a symbol in an 
+ *  alternative sequence \\ all those while(!*cp) 's \\ this must
+ *  be the first Symbol definition, and may not be referenced);
+ * (anyway, it's only a dummy, that the ABC editor will overwrite
+ *  with setroot()).
+ */
+
+Rootsymbol: imm_cmd.
+
+/*
+ * Lexical symbols
+ */
+
+NAME:	"abcdefghijklmnopqrstuvwxyz",
+	"abcdefghijklmnopqrstuvwxyz0123456789'\".".
+KEYWORD:"ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'\".".
+NUMBER: "0123456789.", "0123456789.".
+COMMENT: "\\", "^".
+TEXT1: "^'`", "^'`".
+TEXT2: "^\"`", "^\"`".
+OPERATOR: "+-*/#^~@|<=>", "".
+RAWINPUT: "^", "^".
+SUGGESTION: "", "".
+SUGGHOWNAME: "", "".
+/* For the latter two see comment at the bottom. */
+
+/*
+ * Expressions
+ */
+
+#define A_DISPLAY List_or_table_display; Text1_display; Text2_display
+#define A_PRIMARY Sel_expr; NAME; NUMBER; Compound; A_DISPLAY
+#define A_SINGLE_EXPR Blocked; Grouped; OPERATOR; A_PRIMARY
+
+expression: Collateral; A_SINGLE_EXPR.
+optional_expression: Optional; Collateral; A_SINGLE_EXPR.
+Collateral: single_expression, ", ", expression.
+Compound: "(", coll_test, ")". 	/* see comment on ambiguity of '(' below */
+single_expression: A_SINGLE_EXPR.
+
+Blocked: block, group.
+block: OPERATOR; A_PRIMARY.
+Grouped: group, " ", single_expression.
+group: Blocked; OPERATOR; A_PRIMARY.
+
+primary: A_PRIMARY.
+Sel_expr: primary, "[", expression, "]".
+
+List_or_table_display: "{", optional_list_or_table_filler_series, "}".
+optional_list_or_table_filler_series:
+	Optional; List_filler_series; A_SINGLE_EXPR;
+		Table_filler_series; Table_filler.
+List_filler_series: list_filler, "; ", list_filler_series_tail.
+list_filler_series_tail: A_SINGLE_EXPR; List_filler_series.
+list_filler: A_SINGLE_EXPR.
+Table_filler_series: table_filler, "; ", table_filler_series_tail.
+table_filler: Table_filler.
+table_filler_series_tail: Table_filler_series; Table_filler.
+Table_filler: "[", expression, "]: ", single_expression.
+
+Text1_display: "'", txt1, "'".
+txt1: Optional; TEXT1; Conversion; Text1_plus.
+Text1_plus: text1_conv, text1_next.
+text1_conv: TEXT1; Conversion.
+text1_next: TEXT1; Conversion; Text1_plus.
+
+Text2_display: "\"", txt2, "\"".
+txt2: Optional; TEXT2; Conversion; Text2_plus.
+Text2_plus: text2_conv, text2_next.
+text2_conv: TEXT2; Conversion.
+text2_next: TEXT2; Conversion; Text2_plus.
+
+Conversion: "`", optional_expression, "`".
+
+/*
+ * Addresses
+ */
+
+#define A_SINGLE_ADDRESS NAME; Compound_address; Selection; Behead; Curtail
+#define r_expr group
+
+address: Multiple_address; A_SINGLE_ADDRESS.
+Multiple_address: single_address, ", ", address.
+single_address: A_SINGLE_ADDRESS.
+Compound_address: "(", address, ")".
+
+Selection: address, "[", expression, "]".
+Behead: address, "@", r_expr.
+Curtail: address, "|", r_expr.
+
+/* namings are addresses with only NAME's */
+#define A_NAMING Multiple_naming; NAME; Compound_naming 
+naming: A_NAMING.
+Multiple_naming: single_naming, ", ", naming.
+single_naming: NAME; Compound_naming.
+Compound_naming: "(", naming, ")".
+
+
+/*
+ * Tests
+ */
+
+#define A_NOT_or_QUANT Not; Some_in; Each_in; No_in
+
+test: A_NOT_or_QUANT; And; Or; A_SINGLE_EXPR.
+e_test: Else_kw; A_NOT_or_QUANT; And; Or; A_SINGLE_EXPR.
+Else_kw: R_ELSE.
+#define t_test single_expression
+r_test: A_NOT_or_QUANT; A_SINGLE_EXPR.
+coll_test: Collateral; A_NOT_or_QUANT; And; Or; A_SINGLE_EXPR.
+/*
+ *  This means that a compound expression may in fact contain
+ *  a `collateral test', e.g. (a AND b, c AND d).
+ *  Of course, this is illegal in ABC; but I couldn't solve the
+ *  ambiguity of `(' where a test is expected otherwise;
+ *  this may start a parenthesized test or a compound expression;
+ *  the latter may be followed by more expression fragments,
+ *  the first may not.
+ */
+
+Not: R_NOT, r_test.
+Some_in: R_SOME, naming, R_IN_quant, single_expression, R_HAS, r_test.
+Each_in: R_EACH, naming, R_IN_quant, single_expression,  R_HAS, r_test.
+No_in: R_NO, naming, R_IN_quant, single_expression,  R_HAS, r_test.
+
+And: t_test, " ", and.
+Or: t_test, " ", or.
+and: And_kw.
+or: Or_kw.
+And_kw: R_AND, and_test.
+Or_kw: R_OR, or_test.
+and_test: A_NOT_or_QUANT; And; A_SINGLE_EXPR.
+or_test: A_NOT_or_QUANT; Or; A_SINGLE_EXPR.
+
+/*
+ * Commands
+ *
+ * The order here determines which are suggested first!
+ * (together with the imm_cmd class in Rootsymbol above!!;
+ *  see ../bed/e1gram.c - initclasses)
+ */
+#ifndef GFX
+#define A_SIMPLE_CMD SC1; SC2; SC3
+#else
+#define A_SIMPLE_CMD SC1; SC2; SC3; SC4
+#define SC4 Line; Space; Clear
+#endif
+#define SC1 Share; Quit; Return; Write; Read; Read_raw; Put; Delete
+#define SC2 Report; Fail; Succeed; Insert; Remove; Check; Pass
+#define SC3 Set; Suggestion; KEYWORD; Kw_plus
+
+#define A_CONTROL_CMD If; While; For
+#define A_COMP_CMD Short_comp; Long_comp; Cmt_comp; Select
+#define A_CMD If; For; A_COMP_CMD; A_SIMPLE_CMD; While
+/* #define A_SHORTCMD A_SIMPLE_CMD; Cmt_cmd */
+#define A_SHORTCMD If; For; A_SIMPLE_CMD; While; Short_comp; Cmt_comp; Cmt_cmd
+
+cmd: COMMENT; A_CMD; Cmt_cmd.
+Cmt_cmd: simple_cmd, " ", COMMENT.
+simple_cmd: A_SIMPLE_CMD.
+Short_comp: ifforwhile,  "\t", shortcmd, "\b".
+shortcmd: A_SHORTCMD.
+Cmt_comp: ifforwhile, COMMENT.
+Long_comp: c_ifforwhile, "\t", suite, "\b".
+c_ifforwhile: A_CONTROL_CMD; Cmt_comp.
+ifforwhile: A_CONTROL_CMD.
+
+/* The simple commands are separated in two parts:
+ * those that can be "softened" because their first keyword(s) may
+ * start a User Defined Command,
+ * and those that cannot (Check, If, While, Return, Report, How).
+ * this separation is used in ../bed/e1que2.c!!! (hack? HACK!)
+ */
+Put: R_PUT, expression, R_IN_put, address.
+Insert: R_INSERT, expression, R_IN_insert, address.
+Remove: R_REMOVE, expression, R_FROM_remove, address.
+Delete: R_DELETE, address.
+Share: R_SHARE, naming.
+Write: R_WRITE, expression.
+Read: R_READ, address, R_EG, single_expression.
+Read_raw: R_READ, address, R_RAW.
+Set: R_SET_RANDOM, expression.
+Pass: R_PASS.
+
+#ifdef GFX
+Space: R_SPACE, R_TO_space, expression, expression.
+Line: R_LINE, expression, R_TO_line, expression.
+Clear: R_CLEAR.
+#endif
+
+For: R_FOR, naming, R_IN_for, single_expression, ": ".
+
+Quit: R_QUIT.
+Succeed: R_SUCCEED.
+Fail: R_FAIL.
+
+/* non-softenable: */
+
+Check: R_CHECK, test.
+If: R_IF, test, ": ".
+While: R_WHILE, test, ": ".
+
+Select: R_SELECT, optional_comment, "\t", t_suite,  "\b", optional_comment.
+	/* since SELECT SOMETHING is allowed, but SELECT: ANOTHER is not */
+Return: R_RETURN, expression.
+Report: R_REPORT, test.
+
+/* for user defined commands: */
+Kw_plus: KEYWORD, " ", kw_next.
+kw_next: Collateral; A_SINGLE_EXPR; KEYWORD; Exp_plus; Kw_plus.
+Exp_plus: expression, " ", exp_next.
+exp_next: KEYWORD; Kw_plus.
+
+/* 
+ * Suites
+ */
+
+suite: Suite.
+Suite: "\n", cmd, optional_suite.
+optional_suite: Optional; Suite.
+
+optional_cmdsuite: Optional; A_SHORTCMD; Suite.
+cmdsuite: A_SHORTCMD; Suite.
+
+t_suite: Test_suite.
+Test_suite: "\n", e_test, ": ", optional_comment, "\t", cmdsuite, "\b",
+	optional_t_suite.
+optional_t_suite: Optional; Test_suite.
+
+optional_comment: Optional; COMMENT.
+
+/* 
+ * Unit
+ */
+
+#define A_BODY Head; Cmt_head; Long_unit; Short_unit
+
+/*unit: Optional; A_BODY; Ref_join. ## believed to be unnecessary */
+
+Head: R_HOW_TO, formal_cmd, ": ".
+Cmt_head: head, COMMENT.
+Long_unit: commented_head, "\t", suite, "\b".
+Short_unit: head, "\t", shortcmd, "\b".
+head: Head.
+commented_head: Cmt_head; Head.
+
+formal_cmd: Formal_return; Formal_report; KEYWORD; Formal_kw_plus.
+
+#define A_SINGLE_NAMING NAME; Compound_naming
+Formal_return: R_RETURN, formal_formula.
+Formal_report: R_REPORT, formal_formula.
+/* the following is too liberal, but that was necessary:
+ * the editor allows a formal command with RETURN or REPORT as
+ * first keyword, and that cannot be read back without the last
+ * alternative in the following rule
+ * (another hack? HACK!) */
+formal_formula: Blocked_ff; Grouped_ff; A_SINGLE_NAMING; Formal_kw_plus.
+Blocked_ff: ff_block, ff_group.
+ff_block: A_SINGLE_NAMING.
+ff_group: Blocked_ff; A_SINGLE_NAMING.
+Grouped_ff: ff_group, " ", formal_formula.
+
+Formal_kw_plus: KEYWORD, " ", formal_kw_next.
+formal_kw_next: A_NAMING; KEYWORD; Formal_naming_plus; Formal_kw_plus.
+Formal_naming_plus: naming, " ", naming_next.
+naming_next: KEYWORD; Formal_kw_plus.
+
+Ref_join: refpred, refinements.
+refpred: A_BODY.
+optional_refinements: Optional; Refinement.
+refinements: Refinement.
+Refinement: "\n", name_or_keyword, ": ", optional_comment,
+	"\t", cmdsuite, "\b", optional_refinements.
+name_or_keyword: NAME; KEYWORD; Keyword_list.
+Keyword_list: KEYWORD, " ", kwltail.
+kwltail: KEYWORD; Keyword_list.
+
+/*
+ * Alternative Roots
+ */
+
+Unit_edit: unit_edit.
+Target_edit: address_edit.
+Imm_cmd: imm_cmd.
+
+unit_edit: Optional; A_BODY; Ref_join.
+address_edit: Optional; A_SINGLE_EXPR.
+imm_cmd: Optional; COMMENT; Head; A_CMD; Cmt_cmd; Cmt_head;
+	Edit_unit; Edit_address; Workspace_cmd.
+
+Edit_unit: ":", ed_unit.
+ed_unit: Optional; NAME; KEYWORD; Keyword_list; Colon; Sugghowname.
+Colon: ":".
+Edit_address: "=", ed_address.
+ed_address: Optional; NAME; Equals.
+Equals: "=".
+Workspace_cmd: ">", ws_cmd.
+ws_cmd: Optional; NAME; Right.
+Right: ">".
+
+Expression: expression. 	/* used by ABC editor for READ EG */
+Raw_input: raw_input.		/* used by ABC editor for READ RAW */
+raw_input: Optional; RAWINPUT.	/* the underscore prevents clash
+				 * with enveloping Rawinput Symbol 
+				 * (See comments above) */
+/*
+ * In addition 'mktable' will generate entries defining
+ *	Suggestion: suggestion-body.
+ *	Sugghowname: sugghowname-body.
+ *	Optional: .
+ *	Hole: "?".
+ * at the very end of the table containing the Symbol definitions.
+ *
+ * The first two are only defined if the corresponding lexical items are;
+ * suggestion-body denotes the enveloping class for that item;
+ * the same for sugghowname-body.
+ * (See the comments in read.c).
+ */

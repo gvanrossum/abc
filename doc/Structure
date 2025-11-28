@@ -1,0 +1,61 @@
+# Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1988.
+
+###########################################################################
+#  The Directory Structure of Release 1.00 of the Implementation of ABC.  #
+###########################################################################
+
+#
+# editor-interpreter directories:
+#
+
+b	low level support (memory grabbing, option handling, etc)
+
+bhdrs	interface include files for same
+
+bed	editor source files
+
+ehdrs	editor include files
+
+bint1	interpreter module for compound and number values
+
+btr	module for text, list and table values, using B trees
+
+bint2	interpreter parser
+
+stc	static type check
+
+bint3	interpreter runtime system
+
+ihdrs	interpreter include files
+
+bio	support for -[iolrR] options (interface with operating system)
+
+#
+# code for different machines / operating systems:
+#
+
+atari	for Atari ST
+
+msdos	for IBM PC and compatibles runing MS-DOS
+
+unix	for Unix systems
+
+generic	template for new port's
+
+#
+# other directories:
+#
+
+keys	source for utility abckeys
+
+ukeys	default keys definition files for some terminals (for Unix)
+
+scripts	shell scripts for installation
+
+boot	booting editor source files with grammar info
+
+ex	example ABC workspaces
+
+doc	documentation
+
+tc	public domain sources for the termcap library needed by the editor

@@ -1,0 +1,10 @@
+: 'Check if we are cross compiling'
+
+case $1 in
+'')	exit 0;;
+*)	echo "Please compile and run mkmach on the destination machine"
+	echo "and copy the results to ./$2."
+	echo "Then call 'make all install'"
+	echo " "
+	exit 1;;
+esac

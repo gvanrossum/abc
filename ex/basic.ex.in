@@ -1,0 +1,48 @@
+\ Test all the basic functions and operators
+WRITE 2**1000 /
+WRITE 2**32/10**9 /
+WRITE #stripped "   .    " /
+WRITE "ABCD"@2 /
+WRITE "ABCD"|3 /
+WRITE "ABCD"@2|1 /
+WRITE {1..3} /
+WRITE {1..4; pi} /
+WRITE #{' '..'~'} /
+CHECK 0 <= 1 < 10
+CHECK 0<= random < 1
+CHECK 1<2 AND 2<3
+CHECK 1>2 OR 2<3
+CHECK NOT 1>2
+CHECK SOME x IN {1..3; pi} HAS x=pi
+CHECK EACH x IN {1..3} HAS x<>pi
+CHECK NO x IN {1..3} HAS x=pi
+WRITE 8 round pi, 8 round exactly pi /
+WRITE 8 round (e+1), 8 round (e-1), 8 round(-e), 8 round (e*e), e/e /
+WRITE 8 round root 2 /
+WRITE 8 round (3 root 8) /
+WRITE round pi, floor pi, ceiling pi /
+WRITE 8 round (pi mod 1)
+WRITE */ (8 round pi), /* (8 round pi) /
+WRITE 8 round(10 log 100), 8 round(log e) /
+WRITE 8 round sin pi, 8 round cos pi, 8 round tan pi /
+WRITE 8 round (360 sin 90), 8 round (360 cos 90), 8 round(360 tan 45) /
+WRITE 8 round(2*(arctan tan (pi/2))) /
+WRITE 8 round(360 arctan (360 tan 30))/
+WRITE "ha"^" ha"/
+WRITE "ha"^^3 /
+WRITE lower "aBc"/
+WRITE upper "aBc"/
+WRITE split " Now is the time "/
+PUT {["van"]: "bestelwagen"; ["of"]: "van"; ["or"]: "of"} IN dict
+WRITE #dict, keys dict /
+WRITE "or"#dict, "or"#keys dict/
+CHECK "of" in dict AND "of" in keys dict
+WRITE max dict, max keys dict, min dict, min keys dict/
+WRITE "c" max dict /
+WRITE dict item 2/
+CHECK choice dict in dict
+WRITE "["^("."<<10)^"]"/
+WRITE "["^("."><10)^"]"/
+WRITE "["^(".">>10)^"]"/
+WRITE {' '.."~"}/
+WRITE "The End"/

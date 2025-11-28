@@ -1,0 +1,30 @@
+bed/e1tabl.c:   /* 44  */ {"Insert", {"INSERT "," IN ",0,0,0}, {&cl[18],&cl[35],0,0}, 0},
+
+bhdrs/b0lan.h:#define K_INSERT	"INSERT"
+bhdrs/b0lan.h:#define K_IN_insert	"IN"
+bhdrs/bobj.h:Visible Procedure insert();
+bhdrs/bvis.h:Visible Procedure l_insert();
+
+bint2/i2ana.c:	/* INSERT */ "vlV",
+bint2/i2cmd.c:	else if (insert_keyword(kw)) {			/* INSERT */
+bint2/i2cmd.c:		req(K_IN_insert, ceol, &ftx, &ttx);
+bint2/i2cmd.c:		*v= node3(INSERT, w, targ(ceol));
+bint2/i2dis.c:	/* INSERT */		"INSERT 0 IN 1",
+bint2/i2syn.c:	K_HOW, K_IF, K_INSERT, K_PASS, K_PUT, K_QUIT, K_READ, K_REMOVE,
+
+bint3/i3int.c:case INSERT: Pop2(l_insert); break;
+bint3/i3loc.c:Visible Procedure l_insert(v, l) value v; loc l; {
+
+boot/lang.h:#define R_INSERT	"INSERT "
+boot/lang.h:#define R_IN_insert	" IN "
+
+btr/i1lta.c:Visible Procedure insert(v, pl) value v, *pl; {
+
+ehdrs/tabl.h:#define Insert 44
+
+ihdrs/i2nod.h:#define INSERT			6
+ihdrs/i2nod.h:#define INS_EXPR	First_fieldnr		/* INSERT */
+ihdrs/i2par.h:#define insert_keyword(kw) 	(atkw(kw, K_INSERT))
+
+stc/i2tca.c:	/* INSERT */ "e}eU",
+stc/i2tce.c:	"INSERT",

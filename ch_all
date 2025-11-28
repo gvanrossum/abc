@@ -1,0 +1,33 @@
+: 'Check if make all went allright.'
+
+destroot="$1"
+
+errors="no"
+
+echo " "
+
+for f in abc abckeys
+do
+	if test ! -s $f
+	then
+		echo "*** Failed to make $f"
+		errors="yes"
+	fi
+done
+
+case $errors in
+yes)
+	exit 1
+	;;
+no)
+	case $destroot in
+	'')	echo "The 'abc' command should now work."
+		echo "You can test the ABC interpreter with 'make examples'."
+		;;
+	*)	echo "That 'make all' went well."
+		echo "Say 'make install' to install the ABC system in $destroot."
+		;;
+	esac
+	exit 0
+	;;
+esac

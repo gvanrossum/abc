@@ -1,0 +1,58 @@
+Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1988.
+
+HOW TO TRY THE ABC EDITOR:
+
+The directory ./ex/try is here to try the ABC editor interactively.
+
+After a successful "make all" or "make examples" say:
+
+        make try_editor
+
+to enter the ABC system.  (If you are cross-compiling, copy ./ex
+recursively to the target machine and say:
+
+        cd ex
+        TryEditor
+
+you should make sure that the "abc" command in your PATH.)
+
+After the ABC system has started up it will prompt for a command with
+
+        >>> ?
+
+Slowly type `s', then `t', (no capitals needed) and you should see the ABC
+editor suggest the SELECT and START commands, respectively.  Now
+press [TAB] to accept this last suggestion, and [RETURN] to enter the
+START command to the ABC interpreter.  This command will prompt you for
+input, with
+
+        ?
+
+Just enter a few lines of text, (which will be echoed), ending with an
+empty one (press [RETURN] immediately).  A short "poem" should be generated
+by the ABC interpreter.
+
+If you are already familiar with the ABC language, you might try to edit
+the START how-to by answering
+
+        >>> ?
+
+with
+
+        :START
+
+For example, try to remove the SET RANDOM command, to get random
+results on the same input.  Or make the unit delay the echoing of the text,
+entered by the user, until after the reading of the empty line.  For
+testing purposes you should at least try the arrow keys to move the focus
+around.
+
+You can undo any change by pressing [BACKSPACE].
+You can get help with ? or [ESC]-?.
+You can leave the ABC editor with [ESC]-[ESC].
+You can leave "abc" by typing QUIT.
+
+For more information, see the manual page "abc(1)" and "The ABC
+programmer's Handbook".
+
+See the B/ABC Newsletter, issue 2, for a description of the "generate" program.

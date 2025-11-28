@@ -1,0 +1,15 @@
+FAULTY PROGRAM: abc
+
+DESCRIPTION OF FAULT:
+        if '~/abc' are shared between both UNIX and MSDOS a prolem occurs.
+        MSDOS replaces 'LF' created by UNIX with 'CRLF' so that UNIX can't read 
+'~/abc'
+        any more without converting them back to UNIX 'LF' end-of-line-character
+(s).
+
+FIX:
+        let unix ignore any 'CR' while reading files.
+
+------
+
+Issue new version with floorf replaced with floor_f

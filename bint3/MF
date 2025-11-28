@@ -1,0 +1,1 @@
+all: i3bws.o i3cen.o i3com.o i3env.o i3err.o i3fil.o i3fpr.o i3gfx.o i3imm.o i3in2.o i3ini.o i3int.o i3loc.o i3scr.o i3sou.o i3sta.o i3typ.o

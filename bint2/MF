@@ -1,0 +1,1 @@
+all: i2ana.o i2cmd.o i2dis.o i2exp.o i2fix.o i2gen.o i2syn.o i2tar.o i2tes.o i2uni.o

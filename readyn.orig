@@ -1,0 +1,15 @@
+: 'Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1990.'
+:
+: 'read yes or no [default no]'
+
+n=$1 c=$2
+
+while true
+do 
+	read ans
+	case $ans in
+	y|Y|t|T|yes|Yes|YES|true|True|TRUE)	exit 0;;
+	''|n|N|f|F|no|No|NO|false|False|FALSE)	exit 1;;
+	*)		echo $n "Please answer with yes or no $c"
+	esac
+done

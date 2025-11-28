@@ -1,0 +1,163 @@
+Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1991.
+
+HOW TO TACKLE PROBLEMS DURING ABC INSTALLATION
+
+This file contains some detailed advice in case you run into problems while
+installing the ABC system.
+
+THE SETUP PROCEDURE
+
+Your best bet if the "Setup" script fails is to read it, locate the
+problem, change it and run it again.  You can always shorten its runtime by
+changing long pieces into the simple setting of a shell variable.  For
+instance, once you are sure your floating point is allright, you might
+replace the whole section titled "Floating point arithmetic ok?" by a
+simple "fflag=".
+
+Normally you should not edit the files that Setup creates (./Makefile
+and ./uhdrs/os.h) directly, but their ancestors (./Makefile.unix and
+./uhdrs/os.h.gen) and run Setup to incorporate your changes.
+If you really want to change them directly, also change Setup to
+work on them or remove Setup completely.
+
+MACHINE CONFIGURATION
+
+The file ./unix/mach.h is created by compiling "mkmach.c" and running
+"mkmach" on your target machine, since it tries to establish some facts
+about the hardware configuration.
+
+If you really have to edit unix/mach.h, you should edit the Makefile (or
+Makefile.unix) so that it will not overwrite it anymore.
+
+The problem most encountered with mkmach is "unexpected over/underflow".
+This is usually caused by a bug in "printf", where it can't print very
+large or very small numbers.  Look at the last line produced by mkmach
+before it failed, and then locate the printf after the one that printed
+that line.  If it is trying to print a comment (rather than a #define),
+you can safely comment out the printf and try again.  (You might also want
+to report the bug to your UNIX supplier.)
+
+OTHER UNIX's
+
+The installation of the ABC system has been tested under 4.3 BSD UNIX
+on Tahoe, Vax, Sun and Sparc machines, under ATT System V Release 3.0
+UNIX on an Intel 80386, and under MINIX, which is supposed to be
+VERSION 7 UNIX compatible, as well as Ubuntu.  The Setup script tries
+to find out whether your UNIX is one of these, and creates
+./uhdrs/os.h from ./uhdrs/os.h.gen accordingly.  We expect you will
+have no problems compiling the ABC system in this case.
+
+If your UNIX is different, the Setup script will create a file ./uhdrs/os.h
+with most defaults setup for a VERSION 7 UNIX system, since that makes a
+minimum number of assumptions.  Examine the resulting file, and change the
+names of system include files if they are different on your system.  Also
+check the definitions and UNIX specific flags in this file.  See the
+comments, and use your systems manual to find out how to set them.  Don't
+forget that this file is created by running Setup; change Setup if you want
+to edit uhdrs/os.h directly, or edit uhdrs/os.h.gen and run Setup again.
+
+We have tried to gather the operating system dependent parts in ./unix/*.c
+and ./uhdrs/*.h.  Examine these if any problems in compilation remain.
+
+EDITOR PROBLEMS
+
+Once the ABC system is compiled, you may encounter problems when you use
+the ABC editor.  Our experience is that most of these problems are caused
+by erroneous or insufficiently detailed termcap entries, which decribe your
+terminal's capabilities; so first check the "termcap(5)" manual entry (or
+"terminfo(4)" for terminfo systems).  Ask your system's guru to give you a
+hand if you are not familiar with these.
+
+We use the following entries from the termcap database if they are defined
+for your terminal:
+
+       Name   Type   Description
+
+       AL     str    add n new blank lines
+       CM     str    screen-relative cursor motion
+       DL     str    delete n lines
+       al     str    add new blank line
+       am     bool   has automatic margins
+       bc     str    backspace character
+       bs     bool   terminal can backspace
+       cd     str    clear to end of display
+       ce     str    clear to end of line
+       cl     str    cursor home and clear screen
+       cm     str    cursor motion
+       co     num    number of columns in a line
+       cp     str    cursor position sense reply
+       cr     str    carriage return
+       cs     str    change scrolling region
+       da     bool   display may be retained above screen
+       db     bool   display may be retained below screen
+       dc     str    delete character
+       dl     str    delete line
+       dm     str    enter delete mode
+       do     str    cursor down one line
+       ed     str    end delete mode
+       ei     str    end insert mode
+       hc     bool   hardcopy terminal
+       ho     str    cursor home
+       ic     str    insert character (if necessary; may pad)
+       im     str    enter insert mode
+       in     bool   not save to have null chars on the screen
+       ke     str    keypad mode end
+       ks     str    keypad mode start
+       le     str    cursor left
+       li     num    number of lines on screen
+       mi     bool   move safely in insert (and delete?) mode
+       ms     bool   move safely in standout mode
+       nd     str    cursor right (non-destructive space)
+       nl     str    newline
+       pc     str    pad character
+       se     str    end standout mode
+       sf     str    scroll text up (from bottom of region)
+       sg     num    number of garbage characters left by so or se (default 0)
+       so     str    begin standout mode
+       sp     str    sense cursor position
+       sr     str    scroll text down (from top of region)
+       te     str    end termcap
+       ti     str    start termcap
+       ue     str    end underscore mode
+       up     str    cursor up
+       us     str    start underscore mode
+       vb     str    visible bell
+       ve     str    make cursor visible again
+       vi     str    make cursor invisible
+       xn     bool   newline ignored after 80 cols (VT100 / Concept glitch)
+       xs     bool   standout not erased by overwriting
+
+Of these your termcap entry should at least define the following:
+
+       le OR bc OR bs
+       up
+       cm OR CM OR (ho AND do AND nd)
+       (al AND dl) OR (cs AND sr)
+       ce
+       (so AND se AND sg = 0 [or not defined]) OR (us AND ue)
+
+If either of these requirements is not fulfilled, the ABC editor will
+complain that your terminal is too dumb.
+
+One common problem on terminals with resizeable windows is that the ABC
+prompt shows up like
+
+       >>>
+           ?
+
+on two lines instead of one.  This means that the "li#" entry in your
+TERMCAP does not accurately reflect the number of lines actually in the
+window.  This can be remedied by changing the setting of your TERMCAP
+environment variable, using the output of "stty size" (see stty(1)).  (On
+systems that have the TIOCGWINSZ ioctl, we use it to get the proper window
+size; see tty(4) on BSD UNIX systems).
+
+ERROR MESSAGES
+
+The error messages that ABC displays are all gathered in a file and only
+read when necessary.  This was done to diminish the store used for all
+these strings and to enhance the adaptability of ABC to another natural
+language.
+
+If you want the error messages in another language, for example French, you
+only have to replace the file ./abc.msg by a French version.

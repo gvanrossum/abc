@@ -1,0 +1,28 @@
+The purpose of this directory is to generate the grammar tables for
+the ABC editor in ../bed/e1tabl.c and ../ehdrs/tabl.h from a more or
+less readable description in ./grammar.abc (also using ./lang.h).
+
+The ABC system is set up such that you can do without this directory.
+
+However, if you want to make a version of ABC with KEYWORDS in another
+language, you only need to change ./lang.h and say 'make install' here.
+(You might have to change the name of the C preprocessor in the Makefile.)
+This will install new versions of ../bed/e1tabl.c and ../ehdrs/tabl.h,
+incorporating the new grammar info.
+You should also change ../bhdrs/b0lan.h and bint2/i2dis.c 
+for the ABC interpreter.
+Then you can 'cd ..' and remake the ABC system.
+
+Likewise if for whatever reason you only change the grammar file,
+it is sufficient to say 'make install' here, and remake in '..'.
+
+The ABC grammar is in the file grammar.abc.
+The format of this file is decribed in its heading.
+
+The rest of the files here (together with some files from elsewhere in
+the ABC system) are sources for the program 'mktable' that generates the
+include- and data-file.
+If you change anything in them you might have to recreate the
+dependencies in the Makefile with 'make -f Makefile.bsd Makefile'.
+See ../Makefile.unix, ../scripts/mkdep and ../Problems if your system cannot
+cope with the BSD-ism 'cc -M' for generating dependency info for make.
