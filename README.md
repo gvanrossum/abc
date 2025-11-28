@@ -13,6 +13,9 @@ Another copy of the ABC sources lives in Luciano Ramalho's
 [GitHub](https://github.com/ramalho/abc/commits/master/ABC).
 I hope one day to compare the two trees and unify them.
 
+Most files have 1991 as their latest modification time in the tar ball;
+a few have 1996 or 2021.
+
 ## Building
 
 The old [README](./README) file has build instructions.
@@ -23,22 +26,18 @@ the same size. I hope to eventually upgrade the source code to work on
 
 ## Licence
 
-Most files have 1991 as their latest modification time in the tar ball;
-a few have 1996 or 2021.
-
 CWI never put a license on ABC, but it says:
 
 **Copyright (c) Stichting Mathematisch Centrum, Amsterdam, 1988-2011.**
 
 I'll try to negotiate with Steven Pemberton eventually (hopefully MIT).
 
-## Authors and references
+## Authors
 
-The man page lists the following people as authors:
 Eddy Boeve, Frank van Dijk, Leo Geurts, Timo Krijnen, Lambert Meertens,
 Steven Pemberton, Guido van Rossum.
 
-It also lists these references:
+## References
 
 - Leo Geurts, Lambert Meertens and Steven Pemberton, The ABC Programmer's
   Handbook, Prentice-Hall, Englewood Cliffs, New Jersey, 1990, ISBN 0-13-
