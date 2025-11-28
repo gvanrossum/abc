@@ -70,12 +70,12 @@ FLOAT=
 # DEFS=	-DNDEBUG
 DEFS=
 # CFLAGS= -O $(FLOAT) $(DEFS)
-CFLAGS= $(FLOAT) $(DEFS)
+CFLAGS= -m32 -fcommon $(FLOAT) $(DEFS)
 
 
 # --- Flags to the loader ---
 
-LDFLAGS=
+LDFLAGS= -m32
 
 
 # --- Specify termcap or terminfo library ---
@@ -86,11 +86,13 @@ LDFLAGS=
 # the definitions of OWNTLIB, KOWNTLIB and OWNTBASE to install the
 # public domain version from ./tc.
 
-TERMLIB= -ltermcap
+TERMLIB= /usr/lib/i386-linux-gnu/libtinfo.so.6
 
-#OWNTLIB= libtermcap.a
-#KOWNTLIB= ../libtermcap.a
-#OWNTBASE= termcap
+OWNTLIB=
+KOWNTLIB=
+OWNTBASE=
+
+TCFLAGS= -O -DCM_N -DCM_GT -DCM_B -DCM_D
 
 
 # --- Libraries for editor-interpreter 'abc' ---
@@ -291,7 +293,7 @@ installdest: ALWAYS
 # the definitions of OWNTLIB and OWNTBASE above.
 
 libtermcap.a:
-	cd tc; make library
+	cd tc; $(MAKE) CC='$(CC)' CFLAGS='$(CFLAGS) $(TCFLAGS)' library
 
 termcap:
 	cd tc; make database

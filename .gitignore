@@ -53,3 +53,10 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# ABC-specific ignores
+/abc
+/abckeys
+/mkmach
+/unix/file.h
+/unix/mach.h
